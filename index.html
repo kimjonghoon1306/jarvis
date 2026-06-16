@@ -706,6 +706,7 @@ body::after{
           <input id="igImgPrompt" type="text" placeholder="이미지 설명 (비우면 캡션·주제로 자동)">
           <button onclick="igGenImage()" id="igImgBtn">생성</button>
         </div>
+        <div class="ig-note" style="margin-top:8px">✨ 완전 무료 · 키 불필요 (Pollinations flux 모델). 10~20초 걸려요.</div>
       </div>
       <div class="ig-tabpane" id="igPaneUpload" style="display:none">
         <label class="ig-drop"><input type="file" accept="image/*" onchange="igUpload(event)" hidden>📁 사진 선택 / 끌어다 놓기</label>
@@ -1484,26 +1485,28 @@ async function igGenerate(){
   btn.disabled=false; btn.textContent='✨ 캡션·해시태그 생성';
 }
 async function igGenImage(){
-  const key=localStorage.getItem('jarvis-key-gemini');
-  if(!key){ toast('AI 이미지는 Gemini 키가 필요해요. ⚙️에서 등록하세요.','warn'); openSettings(); return; }
   let p=document.getElementById('igImgPrompt').value.trim();
   if(!p) p=(document.getElementById('igTopic').value.trim()||document.getElementById('igCaption').value.slice(0,80));
   if(!p){ toast('이미지 설명이나 주제를 입력해 주세요','warn'); return; }
   const btn=document.getElementById('igImgBtn'); btn.disabled=true; btn.textContent='...';
-  const box=document.getElementById('igpImg'); box.innerHTML='<span class="igp-ph">🎨 이미지 생성 중...</span>';
-  try{
-    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${key}`,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:'인스타그램용 정사각형 고품질 사진/이미지를 생성: '+p}]}],generationConfig:{responseModalities:['IMAGE','TEXT']}})
-    });
-    const d=await r.json();
-    if(d.error) throw new Error(d.error.message);
-    const part=d?.candidates?.[0]?.content?.parts?.find(x=>x.inlineData);
-    if(!part) throw new Error('이미지를 받지 못했어요');
-    igImg='data:'+(part.inlineData.mimeType||'image/png')+';base64,'+part.inlineData.data;
-    box.innerHTML=`<img src="${igImg}" alt="생성 이미지">`;
-    toast('🎨 이미지 생성 완료','ok');
-  }catch(e){ box.innerHTML='<span class="igp-ph">생성 실패 — '+e.message+'</span>'; toast('이미지 생성 실패: '+e.message,'err'); }
+  const box=document.getElementById('igpImg'); box.innerHTML='<span class="igp-ph">🎨 무료 AI 이미지 생성 중... (10~20초)</span>';
+  // Pollinations.ai — 완전 무료, 키 불필요, flux 모델 (blogautopro와 동일)
+  const seed=Math.floor(Math.random()*99999);
+  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=1024&height=1024&nologo=true&seed=${seed}&model=flux&enhance=true`;
+  await new Promise(res=>{
+    const img=new Image();
+    img.crossOrigin='anonymous';
+    img.onload=()=>{ igImg=url; box.innerHTML=`<img src="${url}" alt="생성 이미지" crossorigin="anonymous">`; toast('🎨 이미지 생성 완료 (무료)','ok'); res(); };
+    img.onerror=()=>{
+      // 폴백: turbo 모델
+      const url2=`https://image.pollinations.ai/prompt/${encodeURIComponent(p)}?width=1024&height=1024&nologo=true&seed=${seed+1}&model=turbo`;
+      const im2=new Image(); im2.crossOrigin='anonymous';
+      im2.onload=()=>{ igImg=url2; box.innerHTML=`<img src="${url2}" alt="생성 이미지" crossorigin="anonymous">`; toast('🎨 이미지 생성 완료 (무료)','ok'); res(); };
+      im2.onerror=()=>{ box.innerHTML='<span class="igp-ph">이미지 생성 실패 — 잠시 후 다시 시도</span>'; toast('이미지 생성 실패','err'); res(); };
+      im2.src=url2;
+    };
+    img.src=url;
+  });
   btn.disabled=false; btn.textContent='생성';
 }
 function igUpload(e){
