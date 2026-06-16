@@ -282,7 +282,6 @@ body::after{
 .jarvis-input .chat-toggle.mic{color:var(--accent);font-size:15px}
 #micBtn.listening{border-color:#ff6b6b!important;color:#ff6b6b;animation:pulse 1s infinite}
 #voiceBtn.on{border-color:var(--accent);color:var(--accent)}
-#clapBtn.on{border-color:var(--accent3);color:var(--accent3);box-shadow:0 0 12px -2px var(--accent3);animation:pulse 1.8s infinite}
 .biz-card.scan{box-shadow:0 0 0 2px var(--c,var(--accent)),0 0 26px -4px var(--c,var(--accent))!important;transform:translateY(-7px) scale(1.03)!important;transition:.3s}
 @media(max-width:560px){
   .jarvis-bar{padding:9px 9px;background:linear-gradient(to top,var(--bg) 80%,transparent)}
@@ -517,7 +516,6 @@ body::after{
     <div class="jarvis-input">
       <button class="chat-toggle" id="chatToggle" onclick="toggleChat()" title="관제 대화 열기/닫기" aria-label="대화 토글"><span class="pulse-dot"></span><span class="badge" id="chatBadge">0</span></button>
       <input id="chatInput" type="text" placeholder="명령하세요, 테리 — 말(🎤)로도 가능" autocomplete="off">
-      <button class="chat-toggle" id="clapBtn" onclick="toggleClap()" title="박수 세 번이면 전체 점검 보고">👏</button>
       <button class="chat-toggle" id="voiceBtn" onclick="setVoiceOut(!voiceOut)" title="응답을 음성으로 듣기">🔊</button>
       <button class="chat-toggle mic" id="micBtn" onclick="toggleVoice()" title="음성으로 명령하기">🎤</button>
       <button class="send" onclick="sendMsg()">➤</button>
@@ -1194,7 +1192,8 @@ async function tryCommand(q){
   const wantHealth=/점검|상태|헬스|살아|생사|가동|온라인|health|체크/.test(t);
   const wantOpen=/열어|열기|이동|관리자|접속|들어가/.test(t);
   // 전체 순차 보고 ("전체 보고", "전체 점검 보고", "다 점검해서 보고")
-  if(/보고/.test(t) && (isAll||/점검/.test(t))){ fullReport(); return null; }
+  // "보고해" / "전체 보고" / "다 점검해서 알려줘" 등 → 순차 보고
+  if(/보고|브리핑/.test(t) || (isAll&&/점검|상태/.test(t))){ fullReport(); return null; }
   // 전체 명령
   if(isAll && wantHealth){ checkAllHealth(); return '🛰️ 모든 사이트가 <b>살아있는지 점검</b>합니다. 카드의 ONLINE/OFFLINE 표시와 좌측 레이더로 확인하세요.'; }
   if(isAll && wantDeploy){ return deployAll(); }
@@ -1295,55 +1294,6 @@ async function fullReport(){
   reporting=false;
 }
 
-/* ── 👏👏👏 박수 3번 감지 (마이크) ── */
-let clapOn=false, clapCtx=null, clapStream=null, clapTimes=[];
-async function toggleClap(force){
-  const want = force!==undefined ? force : !clapOn;
-  if(want===clapOn) return;
-  if(want){
-    try{
-      clapStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
-    }catch(e){ toast('🎤 마이크 권한이 필요해요 (박수 감지).','warn'); return; }
-    clapCtx=new (window.AudioContext||window.webkitAudioContext)();
-    const src=clapCtx.createMediaStreamSource(clapStream);
-    const an=clapCtx.createAnalyser(); an.fftSize=512; src.connect(an);
-    const buf=new Uint8Array(an.fftSize);
-    try{ await clapCtx.resume(); }catch(e){}   // 모바일/일부 PC suspended 대비
-    let armed=true, baseline=6;
-    clapOn=true; updateClapBtn();
-    toast('👏 박수 감지 ON — 박수 세 번 짝짝짝! (입력창에 레벨 표시)','ok');
-    const btn=document.getElementById('clapBtn'), inp=document.getElementById('chatInput');
-    const ph=inp?inp.placeholder:'';
-    (function loop(){
-      if(!clapOn){ if(inp) inp.placeholder=ph; return; }
-      an.getByteTimeDomainData(buf);
-      let peak=0; for(let i=0;i<buf.length;i++){ const v=Math.abs(buf[i]-128); if(v>peak)peak=v; }
-      // 조용할 때 평균(baseline)을 천천히 추적 → 박수는 baseline 대비 급상승
-      baseline += (peak-baseline)*0.05;
-      const now=performance.now();
-      // 실시간 레벨 표시(박수 칠 때 얼마나 뛰는지 눈으로)
-      if(inp) inp.placeholder=`🎤 레벨 ${peak}  (박수 세 번!)  잡힘 ${clapTimes.length}/3`;
-      const isClap = peak>30 && peak > baseline+14;  // 절대 최소 + 상대 급상승
-      if(isClap && armed){
-        armed=false;
-        clapTimes.push(now); clapTimes=clapTimes.filter(t=>now-t<2200);
-        if(btn){ btn.style.transform='scale(1.5)'; setTimeout(()=>btn.style.transform='',150); }
-        const c=clapTimes.length;
-        if(c<3) toast(`👏 ${c}번 잡힘${'·'.repeat(c)}`,'ok');
-        if(c>=3 && !reporting){ clapTimes=[]; if(inp) inp.placeholder=ph; fullReport(); }
-        setTimeout(()=>{armed=true;},170);
-      }
-      requestAnimationFrame(loop);
-    })();
-  } else {
-    clapOn=false; clapTimes=[];
-    try{ clapStream&&clapStream.getTracks().forEach(t=>t.stop()); clapCtx&&clapCtx.close(); }catch(e){}
-    clapStream=clapCtx=null; updateClapBtn();
-    const inp=document.getElementById('chatInput'); if(inp) inp.placeholder='명령하세요, 테리 — 말(🎤)로도 가능';
-    toast('👏 박수 감지 OFF');
-  }
-}
-function updateClapBtn(){ const b=document.getElementById('clapBtn'); if(b) b.classList.toggle('on',clapOn); }
 
 /* ── 관제 레이더 블립 ── */
 function renderRadar(){
