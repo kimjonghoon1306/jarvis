@@ -113,6 +113,7 @@ body::after{
   animation:fill 3.4s cubic-bezier(.6,.1,.4,1) forwards,hueShift 1.5s linear infinite}
 .boot-pct{font-family:'Share Tech Mono';font-size:12px;color:var(--accent);letter-spacing:2px}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 6px var(--accent)}50%{opacity:.25;transform:scale(1.35);box-shadow:0 0 18px var(--accent),0 0 30px var(--accent)}}
 @keyframes corePulse{0%,100%{transform:scale(1);box-shadow:0 0 30px var(--glow)}50%{transform:scale(1.15);box-shadow:0 0 60px var(--accent)}}
 @keyframes logIn{to{opacity:1;transform:none}}
 @keyframes fill{to{width:100%}}
@@ -672,6 +673,8 @@ document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==
 
 /* ════════ AI 설정 (퍼블리 방식: localStorage 키 + 테스트 + 발급) ════════ */
 const KEY_STORE = { gemini:'jarvis-key-gemini', claude:'jarvis-key-claude', groq:'jarvis-key-groq' };
+// Gemini 모델 폴백 배열(blogautopro 동일 방식) — 앞 모델 쿼터막히면 다음 모델로
+const GEMINI_MODELS = ['gemini-2.0-flash','gemini-2.0-flash-lite','gemini-2.5-flash','gemini-2.5-flash-lite'];
 const SYS_PROMPT = '당신은 "자비스(J.A.R.V.I.S)" — 온종일 김종훈 사장님의 AI 비서입니다. 항상 한국어로, 정중하면서 간결하고 똑똑하게 답하세요. 사장님이 운영하는 사업: 무한분양(쇼핑몰 빌더), 온종일팜(농수산물 쇼핑몰), 블로그오토프로(블로그 AI 자동생성·발행, blogautopro.com), 스토어 자동생성(AI 상세페이지), 방판 프로, 온종일 본사(제작 포트폴리오). 모르면 솔직히 말하고, 답은 3~5문장 이내로.';
 
 function openSettings(){
@@ -698,9 +701,12 @@ async function testKey(id){
   try{
     let ok=false;
     if(id==='gemini'){
-      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${v}`,
-        {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'hi'}]}],generationConfig:{maxOutputTokens:5}})});
-      ok=r.ok;
+      // 폴백 모델 중 하나라도 통과하면 성공 처리
+      for(const model of GEMINI_MODELS){
+        const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${v}`,
+          {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'hi'}]}],generationConfig:{maxOutputTokens:5}})});
+        if(r.ok){ ok=true; break; }
+      }
     }else if(id==='groq'){
       const r=await fetch('https://api.groq.com/openai/v1/models',{headers:{Authorization:`Bearer ${v}`}}); ok=r.ok;
     }else if(id==='claude'){
@@ -718,13 +724,27 @@ async function callAI(q){
   const eng=getEngine(); const key=localStorage.getItem(KEY_STORE[eng]);
   if(!key) return null; // 키 없으면 데모로 폴백
   if(eng==='gemini'){
-    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
-      {method:'POST',headers:{'Content-Type':'application/json'},
-       body:JSON.stringify({contents:[{role:'user',parts:[{text:SYS_PROMPT+'\n\n[사장님 질문] '+q}]}],generationConfig:{maxOutputTokens:800,temperature:0.7}})});
-    const d=await r.json();
-    if(d.error) return '⚠️ Gemini 오류: '+(d.error.message||JSON.stringify(d.error));
-    const t=d?.candidates?.[0]?.content?.parts?.map(p=>p.text).join('') ;
-    return t || ('응답이 비었어요 (사유: '+(d?.candidates?.[0]?.finishReason||'알수없음')+'). 키·쿼터를 확인해 주세요.');
+    // 모델별 무료쿼터가 다름(어떤 키는 2.0-flash가 limit:0) → 여러 모델 순회 폴백
+    let lastErr='';
+    for(const model of GEMINI_MODELS){
+      try{
+        const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+          {method:'POST',headers:{'Content-Type':'application/json'},
+           body:JSON.stringify({contents:[{role:'user',parts:[{text:SYS_PROMPT+'\n\n[사장님 질문] '+q}]}],generationConfig:{maxOutputTokens:800,temperature:0.7}})});
+        const d=await r.json();
+        if(d.error){
+          const msg=(d.error.message||'').toLowerCase();
+          // 키 자체 문제면 즉시 중단(모델 바꿔도 소용없음)
+          if(d.error.status==='PERMISSION_DENIED'||msg.includes('api key')||msg.includes('api_key')||msg.includes('invalid'))
+            return '⚠️ Gemini 키 오류: '+d.error.message;
+          lastErr=`${model}: ${d.error.message}`; continue; // 쿼터초과 등 → 다음 모델
+        }
+        const t=d?.candidates?.[0]?.content?.parts?.map(p=>p.text).join('');
+        if(t) return t;
+        lastErr=`${model}: 빈 응답(${d?.candidates?.[0]?.finishReason||'알수없음'})`; continue;
+      }catch(e){ lastErr=`${model}: ${e.message}`; continue; }
+    }
+    return '⚠️ Gemini 오류(모든 모델 실패): '+lastErr;
   }
   if(eng==='groq'){
     const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',
