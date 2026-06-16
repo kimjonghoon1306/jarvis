@@ -411,7 +411,7 @@ const BIZ = [
     live:{ url:'https://nvswnasjtnbrmpdetcbv.supabase.co', key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52c3duYXNqdG5icm1wZGV0Y2J2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTYzNjUsImV4cCI6MjA5Njk5MjM2NX0.1EJZgsAs-lYdy5-d8nHaI1iNZ2qSR3nNKMQLtFKBwRw', table:'stores', u:'몰' } },
   { e:'🥬', n:'온종일팜', d:'농수산물 쇼핑몰 (유안 F&B)', m:128, u:'주문/월', c:'#34e1a0', url:'https://app.yuanfnb.com',
     brief:'유안 F&B의 농수산물 도매·소매 쇼핑몰입니다. 농수산물을 산지직송으로 판매해요.',
-    live:{ url:'https://vkdczkxeiidffdgnebjs.supabase.co', key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZGN6a3hlaWlkZmZkZ25lYmpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMzcyMzAsImV4cCI6MjA5MTcxMzIzMH0.lUaaZmV5kKE9FkT6ldMGrO-bcm5QcHJF97xnCIynSpM', table:'products', u:'상품' } },
+    live:{ url:'https://vkdczkxeiidffdgnebjs.supabase.co', key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZGN6a3hlaWlkZmZkZ25lYmpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMzcyMzAsImV4cCI6MjA5MTcxMzIzMH0.lUaaZmV5kKE9FkT6ldMGrO-bcm5QcHJF97xnCIynSpM', rpc:'jarvis_stats', field:'orders', u:'주문' } },
   { e:'✍️', n:'블로그오토프로', d:'블로그 글 AI 자동생성·발행', m:'AUTO', u:'발행', c:'#ffb454', url:'https://blogautopro.com',
     brief:'네이버 키워드·데이터랩 분석부터 제목·콘텐츠·이미지 AI 생성, 자동 발행까지 한 번에. blogautopro.com 에서 운영 중입니다.' },
   { e:'🤖', n:'스토어 자동생성', d:'AI 상세페이지 생성', m:'AI', u:'엔진', c:'#a98bff', url:'https://store.xn--zk5biyyw.com',
@@ -495,9 +495,17 @@ async function fetchLiveData(){
   for(const card of cards){
     const b=BIZ[+card.dataset.i]; if(!b.live) continue;
     try{
-      const r=await fetch(`${b.live.url}/rest/v1/${b.live.table}?select=id`,
-        {headers:{apikey:b.live.key,Authorization:'Bearer '+b.live.key,Prefer:'count=exact',Range:'0-0'}});
-      const cr=r.headers.get('content-range')||''; const n=parseInt((cr.split('/')[1]||'').trim());
+      let n=NaN;
+      if(b.live.rpc){
+        // RPC: 안전 집계 함수 호출(주문 내용은 숨기고 건수만)
+        const r=await fetch(`${b.live.url}/rest/v1/rpc/${b.live.rpc}`,
+          {method:'POST',headers:{apikey:b.live.key,Authorization:'Bearer '+b.live.key,'Content-Type':'application/json'},body:'{}'});
+        const d=await r.json(); n=parseInt(d?.[b.live.field]);
+      }else{
+        const r=await fetch(`${b.live.url}/rest/v1/${b.live.table}?select=id`,
+          {headers:{apikey:b.live.key,Authorization:'Bearer '+b.live.key,Prefer:'count=exact',Range:'0-0'}});
+        const cr=r.headers.get('content-range')||''; n=parseInt((cr.split('/')[1]||'').trim());
+      }
       if(!isNaN(n)){
         const mb=card.querySelector('.bc-metric b'); const ms=card.querySelector('.bc-metric span');
         mb.dataset.num=n; mb.textContent='0'; countUp(mb); if(ms&&b.live.u)ms.textContent=b.live.u;
