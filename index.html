@@ -146,7 +146,9 @@ body::after{
 @media(max-width:760px){.gc-btn span{display:none}.gc-btn{padding:0 11px}}
 @media(max-width:600px){
   .hud-clock{display:none}
-  .hud-status{display:none}
+  .hud-status .hs-tx{display:none}     /* 모바일: 텍스트 숨기고 반짝이는 LED만 */
+  .hud-status{display:flex;align-items:center;flex-shrink:0;padding:0 4px}
+  .hud-status .led{width:11px;height:11px;box-shadow:0 0 12px var(--ok),0 0 4px var(--ok)}
   .gc-btn{display:none}                /* 모바일: 점검/배포는 음성·채팅으로("전체 점검") */
   .hud-logo i{display:none}            /* 부제 숨김 */
   .hud-top{gap:8px;padding:11px 12px;flex-wrap:wrap;justify-content:flex-end;overflow:visible}
@@ -219,9 +221,15 @@ body::after{
 .bc-led.down{color:#ff6b6b} .bc-led.down .led{background:#ff6b6b;box-shadow:0 0 8px #ff6b6b;animation:none}
 .bc-name{font-weight:900;font-size:15px;margin-bottom:3px;position:relative}
 .bc-desc{font-size:11.5px;color:var(--sub);line-height:1.5;min-height:34px;position:relative}
-.bc-metric{margin-top:12px;display:flex;align-items:baseline;gap:6px;padding-top:12px;border-top:1px solid var(--line);position:relative}
+.bc-spark{height:30px;margin-top:10px;opacity:.85;position:relative;transform:translateZ(8px)}
+.bc-spark svg{width:100%;height:100%;display:block;overflow:visible}
+.biz-card:hover .bc-spark{opacity:1}
+.bc-metric{margin-top:10px;display:flex;align-items:baseline;gap:6px;padding-top:11px;border-top:1px solid var(--line);position:relative}
 .bc-metric b{font-family:'Share Tech Mono';font-size:20px;color:var(--c,var(--accent))}
 .bc-metric span{font-size:11px;color:var(--sub)}
+.bc-metric .bc-go{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--c,var(--accent));opacity:0;transform:translateX(-4px);transition:.3s}
+.biz-card:hover .bc-metric .bc-go{opacity:.9;transform:none}
+.bc-emoji{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c,var(--accent)) 30%,transparent)}
 
 /* 온다(ONDA) 채팅 (하단 고정) */
 .jarvis-bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:14px clamp(14px,3vw,32px);
@@ -401,7 +409,7 @@ body::after{
       <div><b class="orb">ONDA</b><i>ONJONGIL CONTROL</i></div>
     </div>
     <div class="hud-spacer"></div>
-    <div class="hud-status" id="hudStatus"><span class="led"></span> ALL SYSTEMS ONLINE</div>
+    <div class="hud-status" id="hudStatus"><span class="led"></span> <span class="hs-tx">ALL SYSTEMS ONLINE</span></div>
     <button class="gc-btn" onclick="checkAllHealth()" title="모든 사이트가 살아있는지 점검">🛰️ <span>전체점검</span></button>
     <button class="gc-btn deploy" onclick="sendCmd('전체 배포')" title="훅 등록된 사업 일괄 재배포">🚀 <span>전체배포</span></button>
     <div class="hud-clock mono" id="clock">--:--:--</div>
@@ -630,6 +638,16 @@ setTimeout(() => {
   initApp();
 }, 3900);
 
+/* ── 카드 미니 추세선 (SVG, 사업별 시드 고정) ── */
+function miniSpark(seed){
+  let s=seed*97+13, rnd=()=>{ s=(s*1103515245+12345)&0x7fffffff; return s/0x7fffffff; };
+  const N=14, W=100, H=30, pts=[];
+  let v=10+rnd()*8;
+  for(let i=0;i<N;i++){ v=Math.max(3,Math.min(27,v+(rnd()-.42)*7)); pts.push(v); }
+  const d=pts.map((p,i)=>`${(i/(N-1)*W).toFixed(1)},${(H-p).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polygon points="0,${H} ${d} ${W},${H}" fill="var(--c,#38d6ff)" opacity=".12"/><polyline points="${d}" fill="none" stroke="var(--c,#38d6ff)" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+}
+
 /* ── 앱 초기화 ── */
 function initApp(){
   // 사업 카드 (카드별 색 + 카운트업 + 3D 틸트 + stagger 등장)
@@ -639,7 +657,8 @@ function initApp(){
       <div class="bc-top"><span class="bc-emoji">${b.e}</span><span class="bc-led"><span class="led"></span>ONLINE</span></div>
       <div class="bc-name">${b.n}</div>
       <div class="bc-desc">${b.d}</div>
-      <div class="bc-metric"><b data-num="${typeof b.m==='number'?b.m:''}">${typeof b.m==='number'?'0':b.m}</b><span>${b.u}</span></div>
+      <div class="bc-spark">${miniSpark(i)}</div>
+      <div class="bc-metric"><b data-num="${typeof b.m==='number'?b.m:''}">${typeof b.m==='number'?'0':b.m}</b><span>${b.u}</span><span class="bc-go">상세 →</span></div>
     </div>`).join('');
   const cards = [...document.querySelectorAll('.biz-card')];
   cards.forEach((card,i)=>{
@@ -1170,7 +1189,7 @@ async function checkAllHealth(){
   toast(`🛰️ 사이트 점검 완료 — 🟢 ${up}개 정상${down?` · 🔴 ${down}개 응답없음`:''} (총 ${n}개)`, down?'warn':'ok');
   // HUD 상단 상태 + 레이더 갱신
   const hs=document.getElementById('hudStatus');
-  if(hs) hs.innerHTML = down ? `<span class="led" style="background:#ff6b6b;box-shadow:0 0 10px #ff6b6b"></span> ${down} UNIT${down>1?'S':''} DOWN` : '<span class="led"></span> ALL SYSTEMS ONLINE';
+  if(hs) hs.innerHTML = down ? `<span class="led" style="background:#ff6b6b;box-shadow:0 0 10px #ff6b6b"></span> <span class="hs-tx">${down} UNIT${down>1?"S":""} DOWN</span>` : `<span class="led"></span> <span class="hs-tx">ALL SYSTEMS ONLINE</span>`;
   // 가동률 게이지 실데이터
   const pct=n?Math.round(up/n*100):100, gu=document.getElementById('gUptime');
   if(gu){ gu.style.setProperty('--v',pct); gu.querySelector('b').textContent=pct+'%'; }
@@ -1208,7 +1227,7 @@ async function fullReport(){
   if(gu){ gu.style.setProperty('--v',pct); gu.querySelector('b').textContent=pct+'%'; }
   const gus=document.getElementById('gUptimeSub'); if(gus) gus.textContent=`${up}/${n}개 사업 정상`;
   const hs=document.getElementById('hudStatus');
-  if(hs) hs.innerHTML = down ? `<span class="led" style="background:#ff6b6b;box-shadow:0 0 10px #ff6b6b"></span> ${down} UNIT${down>1?'S':''} DOWN` : '<span class="led"></span> ALL SYSTEMS ONLINE';
+  if(hs) hs.innerHTML = down ? `<span class="led" style="background:#ff6b6b;box-shadow:0 0 10px #ff6b6b"></span> <span class="hs-tx">${down} UNIT${down>1?"S":""} DOWN</span>` : `<span class="led"></span> <span class="hs-tx">ALL SYSTEMS ONLINE</span>`;
   renderRadar();
   addJ(`✅ 점검 완료. 전체 ${n}개 중 <b style="color:var(--ok)">${up}개 정상</b>${down?`, <b style="color:#ff6b6b">${down}개 점검 필요</b>`:''}입니다. 가동률 ${pct}퍼센트.`);
   reporting=false;
