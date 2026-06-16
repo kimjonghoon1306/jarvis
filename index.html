@@ -196,6 +196,8 @@ body::after{
 .biz-card:hover .bc-emoji{transform:scale(1.1) rotate(-6deg)}
 .bc-led{display:flex;align-items:center;gap:5px;font-size:10px;font-family:'Share Tech Mono';color:var(--ok)}
 .bc-led .led{width:6px;height:6px}
+.bc-led.chk{color:var(--warn)} .bc-led.chk .led{background:var(--warn);box-shadow:0 0 8px var(--warn)}
+.bc-led.down{color:#ff6b6b} .bc-led.down .led{background:#ff6b6b;box-shadow:0 0 8px #ff6b6b;animation:none}
 .bc-name{font-weight:900;font-size:15px;margin-bottom:3px;position:relative}
 .bc-desc{font-size:11.5px;color:var(--sub);line-height:1.5;min-height:34px;position:relative}
 .bc-metric{margin-top:12px;display:flex;align-items:baseline;gap:6px;padding-top:12px;border-top:1px solid var(--line);position:relative}
@@ -206,7 +208,8 @@ body::after{
 .jarvis-bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:14px clamp(14px,3vw,32px);
   background:linear-gradient(to top,var(--bg) 70%,transparent);}
 .jarvis-inner{max-width:1280px;margin:0 auto}
-.jarvis-msgs{display:flex;flex-direction:column;gap:8px;max-height:34vh;overflow-y:auto;margin-bottom:10px;padding-right:4px}
+.jarvis-msgs{display:flex;flex-direction:column;gap:8px;max-height:0;overflow:hidden;margin-bottom:0;padding-right:4px;opacity:0;transition:max-height .45s cubic-bezier(.2,.9,.2,1),margin-bottom .3s,opacity .35s}
+.jarvis-msgs.open{max-height:42vh;overflow-y:auto;margin-bottom:10px;opacity:1}
 .jmsg{max-width:80%;padding:11px 15px;border-radius:14px;font-size:14px;line-height:1.6;animation:msgIn .3s ease}
 .jmsg.j{align-self:flex-start;background:var(--surf);border:1px solid var(--line2);border-bottom-left-radius:4px}
 .jmsg.u{align-self:flex-end;background:linear-gradient(135deg,var(--accent2),var(--accent3));color:#fff;border-bottom-right-radius:4px}
@@ -221,6 +224,11 @@ body::after{
   background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121a;font-size:18px;font-weight:900;
   transition:transform .15s;display:grid;place-items:center}
 .jarvis-input button:active{transform:scale(.9)}
+.jarvis-input .chat-toggle{width:36px;height:36px;background:var(--surf2);border:1px solid var(--line);border-radius:10px;box-shadow:none;color:var(--sub);font-size:13px;position:relative}
+.jarvis-input .chat-toggle:hover{border-color:var(--accent)}
+.jarvis-input .chat-toggle .pulse-dot{position:static}
+.jarvis-input .chat-toggle .badge{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--accent);color:#04121a;font-size:9px;font-weight:900;display:none;place-items:center}
+.jarvis-input .chat-toggle.has .badge{display:grid}
 /* 설정 모달 */
 .modal-scrim{position:fixed;inset:0;z-index:50;background:rgba(6,12,24,.66);backdrop-filter:blur(6px);
   display:none;align-items:center;justify-content:center;padding:18px}
@@ -256,6 +264,29 @@ body::after{
 .key-inp-row button.save{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121a;border:none}
 .key-msg{font-size:11.5px;margin-top:7px;font-weight:600;min-height:14px}
 .modal-note{font-size:11.5px;color:var(--dim);line-height:1.6;background:var(--surf2);border:1px dashed var(--line);border-radius:12px;padding:12px 14px}
+/* ── ONDA 컨트롤: 배포훅 · 토스트 · 헬스 ── */
+.hook-sec{border-top:1px solid var(--line);padding-top:16px}
+.hook-sec-h{font-family:'Orbitron';font-size:12.5px;letter-spacing:.04em;margin-bottom:6px;color:var(--accent)}
+.hook-sec-d{font-size:11.5px;color:var(--dim);line-height:1.6;margin-bottom:12px}
+.hook-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.hook-row .hk-em{width:26px;text-align:center;font-size:15px;flex-shrink:0}
+.hook-row .hk-nm{font-size:12px;font-weight:700;width:92px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hook-row input{flex:1;min-width:0;background:var(--surf2);border:1px solid var(--line);border-radius:9px;padding:8px 10px;color:var(--txt);font-size:12px;font-family:inherit;outline:none}
+.hook-row input:focus{border-color:var(--accent)}
+.hook-row .hk-save{flex-shrink:0;background:color-mix(in srgb,var(--accent) 16%,transparent);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);color:var(--accent);border-radius:9px;padding:8px 11px;font-size:12px;font-weight:700;cursor:pointer}
+.hook-row .hk-ok{flex-shrink:0;color:var(--ok);font-size:13px;width:12px;text-align:center}
+#toasts{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:90;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:var(--surf);border:1px solid var(--line2);border-left:3px solid var(--accent);border-radius:12px;padding:12px 18px;font-size:13.5px;font-weight:600;box-shadow:0 18px 50px -16px #000;animation:toastIn .3s;max-width:90vw}
+.toast.ok{border-left-color:var(--ok)} .toast.warn{border-left-color:var(--warn)} .toast.err{border-left-color:#ff6b6b}
+@keyframes toastIn{from{opacity:0;transform:translateY(-14px)}to{opacity:1}}
+.dp-health{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;padding:9px 12px;border-radius:10px;background:var(--surf2);border:1px solid var(--line);margin-bottom:4px}
+.dp-health .hd{width:9px;height:9px;border-radius:50%;background:var(--sub);box-shadow:0 0 8px var(--sub);flex-shrink:0}
+.dp-health.up .hd{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.dp-health.down .hd{background:#ff6b6b;box-shadow:0 0 10px #ff6b6b}
+.dp-health.chk .hd{background:var(--warn);box-shadow:0 0 10px var(--warn);animation:pulse 1s infinite}
+.dp-health .hh-ms{margin-left:auto;font-size:11px;color:var(--sub);font-weight:600}
+.dp-btn.deploy{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 24%,transparent),color-mix(in srgb,var(--accent3) 24%,transparent));border-color:color-mix(in srgb,var(--accent) 45%,transparent);color:var(--txt);font-weight:700}
+.dp-btn.deploy:disabled{opacity:.5;cursor:not-allowed}
 /* 사업 상세 대시보드 패널 (우측 드로어) */
 .detail-scrim{position:fixed;inset:0;z-index:55;background:rgba(6,12,24,.6);backdrop-filter:blur(5px);
   display:none;justify-content:flex-end}
@@ -357,9 +388,9 @@ body::after{
   <div class="jarvis-inner">
     <div class="jarvis-msgs" id="msgs"></div>
     <div class="jarvis-input">
-      <span class="pulse-dot"></span>
-      <input id="chatInput" type="text" placeholder="무엇을 도와드릴까요, 테리?" autocomplete="off">
-      <button onclick="sendMsg()">➤</button>
+      <button class="chat-toggle" id="chatToggle" onclick="toggleChat()" title="관제 대화 열기/닫기" aria-label="대화 토글"><span class="pulse-dot"></span><span class="badge" id="chatBadge">0</span></button>
+      <input id="chatInput" type="text" placeholder="명령하세요, 테리 — 예: &quot;무한분양 배포&quot;, &quot;전체 점검&quot;" autocomplete="off">
+      <button class="send" onclick="sendMsg()">➤</button>
     </div>
   </div>
 </div>
@@ -368,6 +399,7 @@ body::after{
 <div class="detail-scrim" id="detail" onclick="if(event.target===this)closeDetail()">
   <div class="detail-panel" id="detailPanel"></div>
 </div>
+<div id="toasts"></div>
 
 <!-- ══ 설정 모달 (AI 연결) ══ -->
 <div class="modal-scrim" id="settings" onclick="if(event.target===this)closeSettings()">
@@ -436,6 +468,13 @@ body::after{
       </div>
 
       <div class="modal-note">🔒 키는 이 브라우저(localStorage)에만 저장되고 서버로 보내지 않습니다. 키가 없으면 온다는 데모 모드로 답해요. 무료로 시작하려면 <b>Gemini</b> 또는 <b>Groq</b>를 추천합니다.</div>
+
+      <!-- 원격 배포 훅 -->
+      <div class="hook-sec">
+        <div class="hook-sec-h">🚀 원격 배포 (Deploy Hook)</div>
+        <div class="hook-sec-d">각 사업의 <b>Vercel → 프로젝트 → Settings → Git → Deploy Hooks</b>에서 URL을 만들어 붙여넣으면, 온다가 버튼/명령으로 즉시 재배포합니다. (URL은 이 브라우저에만 저장)</div>
+        <div id="hookList"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -520,11 +559,14 @@ function initApp(){
   // 스파크라인
   const sp = document.getElementById('spark');
   sp.innerHTML = [42,55,48,70,62,84,96].map((h,i)=>`<i style="height:${h}%;animation-delay:${i*.08}s"></i>`).join('');
-  // 환영 메시지
-  setTimeout(()=>addJ('테리, 모든 사업 유닛이 정상 가동 중입니다. 무엇을 도와드릴까요? <br>예: "매출 알려줘", "무한분양 상태", "오늘 할 일"'), 500);
+  // 환영: 토스트로(화면 가리지 않게) + 채팅엔 접힌 상태로 보관
+  setTimeout(()=>{ toast('🛰️ <b>ONDA</b> 관제 시스템 가동 — 모든 유닛 온라인. 테리, 명령을 기다립니다.','ok'); }, 600);
+  addJ('테리, 모든 사업 유닛이 정상 가동 중입니다. 💬 아래 입력창에 명령하세요.<br>예: <b>"무한분양 배포"</b> · <b>"온종일팜 상태"</b> · <b>"전체 점검"</b> · "매출 알려줘"');
+  unread=0; updateBadge(); // 환영은 안읽음 카운트 제외
   startClock();
   liveTicks();
   fetchLiveData();
+  setTimeout(checkAllHealth, 1500); // 초기 생사 점검
 }
 
 /* ── 실데이터 연결 (Supabase count, anon 공개키) ── */
@@ -569,11 +611,13 @@ async function openDetail(i){
     </div>
     <div class="dp-body">
       ${b.live?'<span class="dp-live"><span class="led"></span>LIVE · 실시간 연결됨</span>':''}
+      ${b.url&&b.url!=='#'?`<div class="dp-health chk" id="dp-health"><span class="hd"></span><span id="dp-health-t">생사 확인 중...</span><span class="hh-ms" id="dp-health-ms"></span></div>`:''}
       ${metricBoxes?`<div class="dp-sec-t">📊 실시간 현황</div><div class="dp-metrics">${metricBoxes}</div>`:''}
       <div class="dp-desc">${b.brief}</div>
       ${b.note?`<div class="dp-note">ℹ️ ${b.note}</div>`:''}
-      <div class="dp-sec-t">⚡ 빠른 작업</div>
+      <div class="dp-sec-t">🎛️ 원격 제어</div>
       <div class="dp-actions">
+        <button class="dp-btn deploy" id="dp-deploy" onclick="deployBiz(${i})">🚀 지금 배포</button>
         ${b.url&&b.url!=='#'?`<a class="dp-btn primary" href="${b.url}" target="_blank" rel="noopener">🌐 사이트 바로가기</a>`:''}
         ${b.admin&&b.admin!==b.url?`<a class="dp-btn" href="${b.admin}" target="_blank" rel="noopener">⚙️ 관리자 페이지</a>`:''}
         ${ctrlBtns}
@@ -581,6 +625,13 @@ async function openDetail(i){
       </div>
     </div>`;
   document.getElementById('detail').classList.add('on');
+  // 헬스 핑
+  if(b.url&&b.url!=='#'){ pingBiz(b).then(h=>{
+    const el=document.getElementById('dp-health'), tt=document.getElementById('dp-health-t'), mm=document.getElementById('dp-health-ms');
+    if(!el) return; el.classList.remove('chk');
+    if(h.state==='up'){ el.classList.add('up'); tt.textContent='🟢 정상 가동 (ONLINE)'; mm.textContent=h.ms+'ms'; }
+    else { el.classList.add('down'); tt.textContent='🔴 응답 없음 — 점검 필요'; }
+  }); }
   // 실데이터 채우기
   (b.metrics||[]).forEach(async (m,k)=>{
     try{
@@ -640,7 +691,7 @@ function toggleTheme(){
 /* ── 채팅 ── */
 const msgs = document.getElementById('msgs');
 function addU(t){ const d=document.createElement('div'); d.className='jmsg u'; d.textContent=t; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; }
-function addJ(html){ const d=document.createElement('div'); d.className='jmsg j'; d.innerHTML='<b>ONDA</b>'+html; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; }
+function addJ(html){ const d=document.createElement('div'); d.className='jmsg j'; d.innerHTML='<b>ONDA</b>'+html; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; if(!chatOpen){ unread++; updateBadge(); } }
 function addTyping(){ const d=document.createElement('div'); d.className='jmsg j typing'; d.id='typing'; d.innerHTML='<b>ONDA</b><span></span><span></span><span></span>'; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; }
 
 // 데모 응답 (※ 실제 AI 연결 자리: 여기서 fetch로 Gemini/Claude 호출하면 됨)
@@ -658,7 +709,12 @@ function jarvisReply(q){
 async function sendMsg(){
   const inp = document.getElementById('chatInput');
   const q = inp.value.trim(); if(!q) return;
+  toggleChat(true);
   addU(q); inp.value='';
+  // 1) 관제 명령 먼저 (배포/점검/열기) — 실제 액션
+  const cmd = await tryCommand(q);
+  if(cmd){ addJ(cmd); return; }
+  // 2) 아니면 AI 대화
   addTyping();
   try{
     const ai = await callAI(q);              // 키 있으면 실제 AI
@@ -680,7 +736,121 @@ const SYS_PROMPT = '당신은 "온다(ONDA)" — 온종일 김종훈(테리)의 
 function openSettings(){
   ['gemini','claude','groq'].forEach(id=>{ const v=localStorage.getItem(KEY_STORE[id])||''; const el=document.getElementById('key-'+id); if(el)el.value=v; });
   reflectEngine();
+  renderHooks();
   document.getElementById('settings').classList.add('on');
+}
+
+/* ════════ ONDA 컨트롤 센터: 토스트 · 채팅토글 · 배포 · 헬스 ════════ */
+function toast(msg, type){
+  const wrap=document.getElementById('toasts');
+  const el=document.createElement('div'); el.className='toast '+(type||'');
+  el.innerHTML=msg; wrap.appendChild(el);
+  setTimeout(()=>{ el.style.transition='opacity .4s,transform .4s'; el.style.opacity='0'; el.style.transform='translateY(-10px)'; setTimeout(()=>el.remove(),400); }, 3600);
+}
+let chatOpen=false, unread=0;
+function toggleChat(force){
+  chatOpen = force!==undefined ? force : !chatOpen;
+  document.getElementById('msgs').classList.toggle('open', chatOpen);
+  if(chatOpen){ unread=0; updateBadge(); msgs.scrollTop=msgs.scrollHeight; }
+}
+function updateBadge(){
+  const t=document.getElementById('chatToggle'), b=document.getElementById('chatBadge');
+  if(unread>0){ t.classList.add('has'); b.textContent=unread>9?'9+':unread; } else t.classList.remove('has');
+}
+
+/* ── 배포 훅 (Vercel Deploy Hook) ── */
+const HOOK_KEY = n => 'onda-hook-'+n;
+function getHook(n){ return (localStorage.getItem(HOOK_KEY(n))||'').trim(); }
+function renderHooks(){
+  document.getElementById('hookList').innerHTML = BIZ.map((b,i)=>`
+    <div class="hook-row">
+      <span class="hk-em">${b.e}</span>
+      <span class="hk-nm">${b.n}</span>
+      <input id="hook-${i}" type="url" placeholder="https://api.vercel.com/v1/integrations/deploy/..." value="${getHook(b.n).replace(/"/g,'&quot;')}">
+      <button class="hk-save" onclick="saveHook(${i})">저장</button>
+      <span class="hk-ok" id="hkok-${i}">${getHook(b.n)?'✓':''}</span>
+    </div>`).join('');
+}
+function saveHook(i){
+  const v=document.getElementById('hook-'+i).value.trim();
+  localStorage.setItem(HOOK_KEY(BIZ[i].n), v);
+  document.getElementById('hkok-'+i).textContent = v?'✓':'';
+  toast(`${BIZ[i].e} <b>${BIZ[i].n}</b> 배포 훅 ${v?'저장됨 ✅':'삭제됨'}`, v?'ok':'warn');
+}
+async function deployBiz(i){
+  const b=BIZ[i], hook=getHook(b.n);
+  if(!hook){ toast(`${b.n}: 배포 훅이 없어요. ⚙️ 설정에서 등록하세요.`,'warn'); openSettings(); return false; }
+  const btn=document.getElementById('dp-deploy');
+  if(btn){ btn.disabled=true; btn.textContent='🚀 배포 요청 중...'; }
+  toast(`${b.e} <b>${b.n}</b> 배포를 시작합니다...`);
+  try{
+    await fetch(hook, {method:'POST', mode:'no-cors'}); // Deploy Hook은 no-cors POST로 트리거됨
+    toast(`✅ <b>${b.n}</b> 재배포가 트리거됐어요. 1~2분 뒤 반영됩니다.`,'ok');
+    if(btn){ btn.textContent='✅ 배포 시작됨'; setTimeout(()=>{btn.disabled=false;btn.textContent='🚀 지금 배포';},4000); }
+    return true;
+  }catch(e){
+    toast(`⚠️ <b>${b.n}</b> 배포 실패: ${e.message}`,'err');
+    if(btn){ btn.disabled=false; btn.textContent='🚀 지금 배포'; }
+    return false;
+  }
+}
+
+/* ── 헬스체크 (사이트 생사 확인) ── */
+async function pingBiz(b){
+  if(!b.url || b.url==='#') return {state:'none'};
+  const t0=performance.now();
+  try{
+    await fetch(b.url, {mode:'no-cors', cache:'no-store'});
+    return {state:'up', ms:Math.round(performance.now()-t0)};
+  }catch(e){ return {state:'down', ms:Math.round(performance.now()-t0)}; }
+}
+
+/* ── 자연어 관제 명령 인터셉터 ── */
+const ALIASES = { '무한분양':['무한','분양','몰빌더'], '온종일팜':['팜','농수산','유안','onjongilfarm'], '블로그오토프로':['블로그','블로그오토','blogauto','자동발행'], '스토어 자동생성':['스토어','상세페이지','store'], '방판 프로':['방판','mlm','방문판매'], '온종일 본사':['본사','포트폴리오','honsa'] };
+function matchBiz(t){
+  for(let i=0;i<BIZ.length;i++){ const b=BIZ[i];
+    if(t.includes(b.n)) return i;
+    if((ALIASES[b.n]||[]).some(a=>t.includes(a))) return i;
+  }
+  return -1;
+}
+async function tryCommand(q){
+  const t=q.toLowerCase().replace(/\s/g,'');
+  const isAll=/전체|모든|모두|all/.test(t);
+  const wantDeploy=/배포|deploy|재배포|올려|업데이트반영/.test(t);
+  const wantHealth=/점검|상태|헬스|살아|생사|가동|온라인|health|체크/.test(t);
+  const wantOpen=/열어|열기|이동|관리자|접속|들어가/.test(t);
+  // 전체 명령
+  if(isAll && wantHealth){ checkAllHealth(); return '🛰️ 전체 사업 유닛 <b>헬스 점검</b>을 시작합니다. 상단 시스템 패널에서 실시간으로 확인하세요.'; }
+  if(isAll && wantDeploy){ return deployAll(); }
+  // 개별 명령
+  const i=matchBiz(t); if(i<0) return null;
+  const b=BIZ[i];
+  if(wantDeploy){ const ok=await deployBiz(i); return ok?`🚀 <b style="color:${b.c}">${b.n}</b> 재배포를 트리거했습니다. 곧 새 버전이 올라갑니다.`:`⚠️ <b>${b.n}</b> 배포 훅이 없어요. 방금 설정창을 열었으니 Vercel Deploy Hook URL을 넣어주세요.`; }
+  if(wantHealth){ openDetail(i); const h=await pingBiz(b); const lab={up:'🟢 정상 가동(ONLINE)',down:'🔴 응답 없음(점검 필요)',none:'⚪ 웹주소 없음'}[h.state]; return `<b style="color:${b.c}">${b.n}</b> 상태: ${lab}${h.ms?` · 응답 ${h.ms}ms`:''}. 상세 패널을 열었습니다.`; }
+  if(wantOpen){ const url=b.admin||b.url; if(url&&url!=='#'){ window.open(url,'_blank'); return `🌐 <b>${b.n}</b> ${b.admin?'관리자':''} 페이지를 새 탭에서 열었습니다.`; } return `<b>${b.n}</b>는 아직 웹주소가 없어요.`; }
+  // 사업명만 언급 → 상세 패널 + 브리핑
+  openDetail(i);
+  return `<b style="color:${b.c}">${b.n}</b> 관제 패널을 열었습니다. ${b.brief}`;
+}
+async function deployAll(){
+  const targets=BIZ.map((b,i)=>({b,i})).filter(x=>getHook(x.b.n));
+  if(!targets.length){ openSettings(); return '배포 훅이 등록된 사업이 없어요. ⚙️에서 Deploy Hook을 먼저 등록하세요.'; }
+  for(const {i} of targets){ await deployBiz(i); }
+  return `🚀 배포 훅이 등록된 <b>${targets.length}개</b> 사업을 일괄 재배포했습니다.`;
+}
+/* ── 전체 헬스 점검 → 카드 LED 갱신 ── */
+async function checkAllHealth(){
+  const cards=[...document.querySelectorAll('.biz-card')];
+  cards.forEach(c=>{ const led=c.querySelector('.bc-led'); if(led&&BIZ[+c.dataset.i].url!=='#'){ led.innerHTML='<span class="led"></span>점검중'; led.classList.add('chk'); }});
+  let up=0,down=0,n=0;
+  for(const c of cards){ const b=BIZ[+c.dataset.i]; const led=c.querySelector('.bc-led'); if(!led||b.url==='#') continue;
+    const h=await pingBiz(b); n++;
+    led.classList.remove('chk');
+    if(h.state==='up'){ up++; led.innerHTML=(b._live?'<span class="led"></span>LIVE':'<span class="led"></span>ONLINE'); led.classList.remove('down'); }
+    else { down++; led.innerHTML='<span class="led"></span>OFFLINE'; led.classList.add('down'); }
+  }
+  toast(`🛰️ 헬스 점검 완료 — 🟢 ${up} 정상${down?` · 🔴 ${down} 점검필요`:''} (총 ${n})`, down?'warn':'ok');
 }
 function closeSettings(){ document.getElementById('settings').classList.remove('on'); }
 function getEngine(){ return localStorage.getItem('jarvis-engine')||'gemini'; }
