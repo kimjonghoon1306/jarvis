@@ -1,0 +1,47 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Noto+Sans+KR:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1200px;height:630px;overflow:hidden;font-family:'Noto Sans KR',sans-serif;
+  background:radial-gradient(70% 80% at 78% 10%,rgba(56,214,255,.18),transparent 60%),
+             radial-gradient(60% 70% at 10% 100%,rgba(169,139,255,.16),transparent 60%),
+             #0e1626;position:relative;color:#e8f0ff}
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(120,180,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.06) 1px,transparent 1px);background-size:54px 54px}
+.ring{position:absolute;border-radius:50%;border:1px solid rgba(120,180,255,.25)}
+.r1{width:520px;height:520px;right:-130px;top:-120px;border-style:dashed}
+.r2{width:340px;height:340px;right:-40px;top:-30px;border-color:rgba(120,180,255,.4)}
+.r2::before{content:"";position:absolute;width:12px;height:12px;border-radius:50%;background:#38d6ff;box-shadow:0 0 20px #38d6ff;top:-6px;left:50%}
+.wrap{position:relative;z-index:1;padding:78px 80px;height:100%;display:flex;flex-direction:column;justify-content:center;gap:30px}
+.core{display:flex;align-items:center;gap:26px}
+.mark{width:120px;height:120px;border-radius:30px;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 38%,#fff,#38d6ff 45%,#6ea8ff);font-family:'Orbitron';font-weight:900;font-size:62px;color:#04121a;
+  box-shadow:0 0 60px -8px rgba(56,214,255,.7)}
+.title{font-family:'Orbitron';font-weight:900;font-size:92px;letter-spacing:.12em;
+  background:linear-gradient(90deg,#38d6ff,#a98bff,#6ea8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-size:30px;font-weight:700;color:#aab8d8;letter-spacing:.02em}
+.sub b{color:#38d6ff}
+.units{display:flex;gap:14px;margin-top:6px}
+.u{display:flex;align-items:center;gap:9px;padding:13px 20px;border-radius:14px;background:rgba(120,180,255,.08);border:1px solid rgba(120,180,255,.18);font-size:20px;font-weight:700}
+.u .d{width:9px;height:9px;border-radius:50%;background:#34e1a0;box-shadow:0 0 10px #34e1a0}
+.foot{position:absolute;bottom:46px;left:80px;font-family:'Share Tech Mono';font-size:22px;color:#6ea8ff;letter-spacing:3px}
+</style></head>
+<body>
+<div class="grid"></div>
+<div class="ring r1"></div><div class="ring r2"></div>
+<div class="wrap">
+  <div class="core">
+    <div class="mark">J</div>
+    <div>
+      <div class="title">J.A.R.V.I.S</div>
+    </div>
+  </div>
+  <div class="sub">온종일 통합 관제 <b>AI 비서</b> — 사장님의 모든 사업을, 한 화면에서</div>
+  <div class="units">
+    <span class="u"><span class="d"></span>무한분양</span>
+    <span class="u"><span class="d"></span>온종일팜</span>
+    <span class="u"><span class="d"></span>유안 F&B</span>
+    <span class="u"><span class="d"></span>+3 UNITS</span>
+  </div>
+</div>
+<div class="foot">JV.온종일.COM · ALL SYSTEMS ONLINE</div>
+</body></html>
