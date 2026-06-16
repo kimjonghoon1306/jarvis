@@ -1536,10 +1536,14 @@ async function igHiggsGen(){
       for(const k in x) dig(x[k]); })(o); return f; };
   try{
     // 크레딧 절약: 싼 모델/저해상도부터 시도(부족하면 다음, 404면 모델 건너뜀)
+    const ar={prompt:p, aspect_ratio:'1:1'};
     const TRIES=[
-      ['reve/text-to-image', {prompt:p, aspect_ratio:'1:1'}],
+      ['z-image', ar],                          // 가장 저렴(budget)
+      ['tongyi-mai/z-image', ar],
+      ['higgsfield-ai/z-image', ar],
+      ['reve/text-to-image', ar],
+      ['recraft/recraft-v4-1', ar],
       ['higgsfield-ai/soul/standard', {prompt:p, aspect_ratio:'1:1', resolution:'720p'}],
-      ['higgsfield-ai/soul/standard', {prompt:p, aspect_ratio:'1:1', resolution:'1080p'}],
     ];
     let sub=null, t='', lastErr='', credit=false;
     for(const [model,body] of TRIES){
