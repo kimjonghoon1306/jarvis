@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>J.A.R.V.I.S — 온종일 통합 관제</title>
-<meta name="description" content="온종일 통합 관제 AI 비서 — 사장님의 모든 사업을, 한 화면에서.">
+<title>ONDA — 온종일 통합 관제</title>
+<meta name="description" content="온종일 통합 관제 AI 비서 — 테리의 모든 사업을, 한 화면에서.">
 <!-- 카카오톡·페북·트위터 링크 미리보기 -->
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="J.A.R.V.I.S">
-<meta property="og:title" content="J.A.R.V.I.S — 온종일 통합 관제">
-<meta property="og:description" content="사장님의 모든 사업을, 한 화면에서. AI 비서 자비스.">
+<meta property="og:site_name" content="ONDA">
+<meta property="og:title" content="ONDA — 온종일 통합 관제">
+<meta property="og:description" content="테리의 모든 사업을, 한 화면에서. AI 비서 온다(ONDA).">
 <meta property="og:image" content="https://jv.xn--zk5biyyw.com/og.png?v=1">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://jv.xn--zk5biyyw.com">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="J.A.R.V.I.S — 온종일 통합 관제">
-<meta name="twitter:description" content="사장님의 모든 사업을, 한 화면에서. AI 비서 자비스.">
+<meta name="twitter:title" content="ONDA — 온종일 통합 관제">
+<meta name="twitter:description" content="테리의 모든 사업을, 한 화면에서. AI 비서 온다(ONDA).">
 <meta name="twitter:image" content="https://jv.xn--zk5biyyw.com/og.png?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -202,7 +202,7 @@ body::after{
 .bc-metric b{font-family:'Share Tech Mono';font-size:20px;color:var(--c,var(--accent))}
 .bc-metric span{font-size:11px;color:var(--sub)}
 
-/* 자비스 채팅 (하단 고정) */
+/* 온다(ONDA) 채팅 (하단 고정) */
 .jarvis-bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:14px clamp(14px,3vw,32px);
   background:linear-gradient(to top,var(--bg) 70%,transparent);}
 .jarvis-inner{max-width:1280px;margin:0 auto}
@@ -305,7 +305,7 @@ body::after{
     <span class="boot-orbit o1"><i></i></span><span class="boot-orbit o2"><i></i></span>
     <span class="boot-core-c"><span>J</span></span>
   </div>
-  <div class="boot-title">J.A.R.V.I.S</div>
+  <div class="boot-title">ONDA</div>
   <div class="boot-bar"><i></i></div>
   <div class="boot-pct mono" id="bootPct">0%</div>
   <div class="boot-log mono" id="bootLog"></div>
@@ -317,7 +317,7 @@ body::after{
   <div class="hud-top">
     <div class="hud-logo">
       <div class="mark">J</div>
-      <div><b class="orb">JARVIS</b><i>ONJONGIL CONTROL</i></div>
+      <div><b class="orb">ONDA</b><i>ONJONGIL CONTROL</i></div>
     </div>
     <div class="hud-spacer"></div>
     <div class="hud-status"><span class="led"></span> ALL SYSTEMS ONLINE</div>
@@ -352,13 +352,13 @@ body::after{
   </div>
 </div>
 
-<!-- ══ 자비스 채팅 ══ -->
+<!-- ══ 온다(ONDA) 채팅 ══ -->
 <div class="jarvis-bar">
   <div class="jarvis-inner">
     <div class="jarvis-msgs" id="msgs"></div>
     <div class="jarvis-input">
       <span class="pulse-dot"></span>
-      <input id="chatInput" type="text" placeholder="무엇을 도와드릴까요, 사장님?" autocomplete="off">
+      <input id="chatInput" type="text" placeholder="무엇을 도와드릴까요, 테리?" autocomplete="off">
       <button onclick="sendMsg()">➤</button>
     </div>
   </div>
@@ -374,7 +374,7 @@ body::after{
   <div class="modal">
     <div class="modal-h">
       <span class="mh-ico">🧠</span>
-      <div><b>AI 엔진 연결</b><i>키를 넣으면 자비스가 진짜로 대화합니다</i></div>
+      <div><b>AI 엔진 연결</b><i>키를 넣으면 온다가 진짜로 대화합니다</i></div>
       <button class="mh-x" onclick="closeSettings()">✕</button>
     </div>
     <div class="modal-body">
@@ -435,7 +435,7 @@ body::after{
         <div class="key-msg" id="msg-groq"></div>
       </div>
 
-      <div class="modal-note">🔒 키는 이 브라우저(localStorage)에만 저장되고 서버로 보내지 않습니다. 키가 없으면 자비스는 데모 모드로 답해요. 무료로 시작하려면 <b>Gemini</b> 또는 <b>Groq</b>를 추천합니다.</div>
+      <div class="modal-note">🔒 키는 이 브라우저(localStorage)에만 저장되고 서버로 보내지 않습니다. 키가 없으면 온다는 데모 모드로 답해요. 무료로 시작하려면 <b>Gemini</b> 또는 <b>Groq</b>를 추천합니다.</div>
     </div>
   </div>
 </div>
@@ -479,7 +479,7 @@ const bootLines = [
   ['사업 유닛 6개 연결 중...', 1300],
   ['무한분양 · 온종일팜 · 블로그오토프로 · 스토어 · 방판 · 본사 <span class="ok">ONLINE</span>', 2000],
   ['보안 프로토콜 활성화... <span class="ok">OK</span>', 2700],
-  ['사장님, J.A.R.V.I.S 준비 완료되었습니다. <span class="ok">●</span>', 3300],
+  ['테리, ONDA 준비 완료되었습니다. <span class="ok">●</span>', 3300],
 ];
 const log = document.getElementById('bootLog');
 bootLines.forEach(([t,delay]) => setTimeout(() => {
@@ -521,7 +521,7 @@ function initApp(){
   const sp = document.getElementById('spark');
   sp.innerHTML = [42,55,48,70,62,84,96].map((h,i)=>`<i style="height:${h}%;animation-delay:${i*.08}s"></i>`).join('');
   // 환영 메시지
-  setTimeout(()=>addJ('사장님, 모든 사업 유닛이 정상 가동 중입니다. 무엇을 도와드릴까요? <br>예: "매출 알려줘", "무한분양 상태", "오늘 할 일"'), 500);
+  setTimeout(()=>addJ('테리, 모든 사업 유닛이 정상 가동 중입니다. 무엇을 도와드릴까요? <br>예: "매출 알려줘", "무한분양 상태", "오늘 할 일"'), 500);
   startClock();
   liveTicks();
   fetchLiveData();
@@ -577,7 +577,7 @@ async function openDetail(i){
         ${b.url&&b.url!=='#'?`<a class="dp-btn primary" href="${b.url}" target="_blank" rel="noopener">🌐 사이트 바로가기</a>`:''}
         ${b.admin&&b.admin!==b.url?`<a class="dp-btn" href="${b.admin}" target="_blank" rel="noopener">⚙️ 관리자 페이지</a>`:''}
         ${ctrlBtns}
-        <button class="dp-btn" onclick="briefBiz(${i})">🤖 자비스에게 브리핑 받기</button>
+        <button class="dp-btn" onclick="briefBiz(${i})">🤖 온다에게 브리핑 받기</button>
       </div>
     </div>`;
   document.getElementById('detail').classList.add('on');
@@ -640,20 +640,20 @@ function toggleTheme(){
 /* ── 채팅 ── */
 const msgs = document.getElementById('msgs');
 function addU(t){ const d=document.createElement('div'); d.className='jmsg u'; d.textContent=t; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; }
-function addJ(html){ const d=document.createElement('div'); d.className='jmsg j'; d.innerHTML='<b>J.A.R.V.I.S</b>'+html; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; }
-function addTyping(){ const d=document.createElement('div'); d.className='jmsg j typing'; d.id='typing'; d.innerHTML='<b>J.A.R.V.I.S</b><span></span><span></span><span></span>'; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; }
+function addJ(html){ const d=document.createElement('div'); d.className='jmsg j'; d.innerHTML='<b>ONDA</b>'+html; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; }
+function addTyping(){ const d=document.createElement('div'); d.className='jmsg j typing'; d.id='typing'; d.innerHTML='<b>ONDA</b><span></span><span></span><span></span>'; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; }
 
 // 데모 응답 (※ 실제 AI 연결 자리: 여기서 fetch로 Gemini/Claude 호출하면 됨)
 function jarvisReply(q){
   const t = q.replace(/\s/g,'');
-  if(/안녕|하이|반가/.test(t)) return '안녕하세요 사장님. 오늘도 온종일이 곁에 있겠습니다. 🌙';
+  if(/안녕|하이|반가/.test(t)) return '안녕하세요 테리. 오늘도 온종일이 곁에 있겠습니다. 🌙';
   if(/매출|수익|돈/.test(t)) return '이번 달 통합 매출은 전월 대비 <b style="color:var(--accent)">+18%</b> 입니다. 온종일팜 주문이 특히 늘었어요. 상세 리포트를 볼까요?';
   if(/무한분양/.test(t)) return '무한분양은 정상 가동 중입니다. 24개 스킨, 발행 쇼핑몰 운영 중이고 인트로 영상도 라이브예요.';
   if(/온종일팜|농수산|팜/.test(t)) return '온종일팜은 이번 달 주문 128건 처리 중입니다. 신선식품 카테고리가 가장 활발해요.';
   if(/할일|일정|todo|투두/.test(t)) return '오늘 추천 작업: ① 온종일팜 SQL 미실행 4건 확인 ② 유안 F&B 신규 입점 문의 응대 ③ 토스 PG 가맹 심사 상태 점검';
   if(/날씨/.test(t)) return '죄송하지만 날씨 API는 아직 연결되지 않았습니다. 원하시면 붙여드릴게요. ☁️';
-  if(/고마|감사|수고/.test(t)) return '천만에요 사장님. 언제든 불러주세요. 🦾';
-  return '"'+q+'" 명령을 접수했습니다. 지금은 데모 모드라 정해진 답변만 드려요 — AI 키(Gemini/Claude)를 연결하면 무엇이든 답하는 진짜 자비스가 됩니다.';
+  if(/고마|감사|수고/.test(t)) return '천만에요 테리. 언제든 불러주세요. 🦾';
+  return '"'+q+'" 명령을 접수했습니다. 지금은 데모 모드라 정해진 답변만 드려요 — AI 키(Gemini/Claude)를 연결하면 무엇이든 답하는 진짜 온다가 됩니다.';
 }
 async function sendMsg(){
   const inp = document.getElementById('chatInput');
@@ -675,7 +675,7 @@ document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==
 const KEY_STORE = { gemini:'jarvis-key-gemini', claude:'jarvis-key-claude', groq:'jarvis-key-groq' };
 // Gemini 모델 폴백 배열(blogautopro 동일 방식) — 앞 모델 쿼터막히면 다음 모델로
 const GEMINI_MODELS = ['gemini-2.0-flash','gemini-2.0-flash-lite','gemini-2.5-flash','gemini-2.5-flash-lite'];
-const SYS_PROMPT = '당신은 "자비스(J.A.R.V.I.S)" — 온종일 김종훈 사장님의 AI 비서입니다. 항상 한국어로, 정중하면서 간결하고 똑똑하게 답하세요. 사장님이 운영하는 사업: 무한분양(쇼핑몰 빌더), 온종일팜(농수산물 쇼핑몰), 블로그오토프로(블로그 AI 자동생성·발행, blogautopro.com), 스토어 자동생성(AI 상세페이지), 방판 프로, 온종일 본사(제작 포트폴리오). 모르면 솔직히 말하고, 답은 3~5문장 이내로.';
+const SYS_PROMPT = '당신은 "온다(ONDA)" — 온종일 김종훈(테리)의 AI 비서입니다. 사용자를 "테리"라고 부르세요. 항상 한국어로, 정중하면서 간결하고 똑똑하게 답하세요. 테리가 운영하는 사업: 무한분양(쇼핑몰 빌더), 온종일팜(농수산물 쇼핑몰), 블로그오토프로(블로그 AI 자동생성·발행, blogautopro.com), 스토어 자동생성(AI 상세페이지), 방판 프로, 온종일 본사(제작 포트폴리오). 모르면 솔직히 말하고, 답은 3~5문장 이내로.';
 
 function openSettings(){
   ['gemini','claude','groq'].forEach(id=>{ const v=localStorage.getItem(KEY_STORE[id])||''; const el=document.getElementById('key-'+id); if(el)el.value=v; });
@@ -730,7 +730,7 @@ async function callAI(q){
       try{
         const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
           {method:'POST',headers:{'Content-Type':'application/json'},
-           body:JSON.stringify({contents:[{role:'user',parts:[{text:SYS_PROMPT+'\n\n[사장님 질문] '+q}]}],generationConfig:{maxOutputTokens:800,temperature:0.7}})});
+           body:JSON.stringify({contents:[{role:'user',parts:[{text:SYS_PROMPT+'\n\n[테리 질문] '+q}]}],generationConfig:{maxOutputTokens:800,temperature:0.7}})});
         const d=await r.json();
         if(d.error){
           const msg=(d.error.message||'').toLowerCase();
