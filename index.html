@@ -733,8 +733,8 @@ body::after{
       </div>
 
       <!-- 5. 발행 -->
-      <button class="ig-publish" id="igPubBtn" onclick="igPublish()">📤 인스타그램에 발행</button>
-      <div class="modal-note">크리에이터 계정 ✅. 실제 자동발행은 Meta Graph API 연결(3단계)이 완료되면 작동합니다. 지금은 콘텐츠 생성·미리보기·복사가 가능해요.</div>
+      <button class="ig-publish" id="igPubBtn" onclick="igPublish()">📤 인스타로 보내기</button>
+      <div class="modal-note">📱 모바일: 누르면 이미지+캡션이 공유시트로 떠요 → <b>인스타 선택</b>해 한 번에 올리기. 💻 PC: 이미지 저장+캡션 복사. (완전 자동발행은 Meta 연결 시 추가)</div>
     </div>
   </div>
 </div>
@@ -1554,13 +1554,29 @@ async function igHiggsGen(){
   }
   btn.disabled=false; btn.textContent='생성';
 }
-function igPublish(){
+async function dataUrlToFile(src,name){
+  let blob;
+  if(src.startsWith('data:')){ blob=await (await fetch(src)).blob(); }
+  else { blob=await (await fetch(src,{mode:'cors'})).blob(); }
+  return new File([blob], name, {type:blob.type||'image/png'});
+}
+async function igPublish(){
   const cap=document.getElementById('igCaption').value.trim();
   if(!cap){ toast('캡션을 먼저 만들어 주세요','warn'); return; }
   if(!igImg){ toast('이미지를 먼저 준비해 주세요','warn'); return; }
-  // 3단계(Meta 발행) 전까지는 캡션 복사 + 안내
   navigator.clipboard?.writeText(cap).catch(()=>{});
-  toast('📋 캡션을 복사했어요. 자동발행(Meta 연결)은 3단계에서 완성됩니다.','ok');
+  // 모바일: 이미지+캡션을 공유시트로 → 인스타 선택 한 번에
+  try{
+    const file=await dataUrlToFile(igImg, 'onda-insta.png');
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({ files:[file], text:cap });
+      toast('📤 공유 완료! 인스타를 선택해 올리세요. (캡션은 복사돼 있어요)','ok');
+      return;
+    }
+  }catch(e){ if(e.name==='AbortError') return; }
+  // PC 등 공유 미지원: 이미지 다운로드 + 캡션 복사
+  const a=document.createElement('a'); a.href=igImg; a.download='onda-insta.png'; a.click();
+  toast('💾 이미지 저장 + 📋 캡션 복사 완료. 인스타에 올리면 돼요.','ok');
 }
 // 인스타 명령(채팅에서 "인스타")
 function getEngine(){ return localStorage.getItem('jarvis-engine')||'gemini'; }
