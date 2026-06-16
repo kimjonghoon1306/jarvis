@@ -23,15 +23,15 @@ export default async function handler(req, res){
 
   try{
     if(req.method==='POST'){
-      const model = req.query.model || 'text2image_soul_v2';
+      const model = req.query.model || 'higgsfield-ai/soul/standard';
       const body = typeof req.body==='string' ? req.body : JSON.stringify(req.body||{});
-      const r = await fetch(`${BASE}/v1/${model}`, { method:'POST', headers:H, body });
+      const r = await fetch(`${BASE}/${model}`, { method:'POST', headers:{...H, Accept:'application/json'}, body });
       return pass(r);
     }
     if(req.method==='GET'){
       const id = req.query.id;
       if(!id) return res.status(400).json({error:'id 없음'});
-      const r = await fetch(`${BASE}/v1/job-sets/${id}`, { headers:H });
+      const r = await fetch(`${BASE}/requests/${id}/status`, { headers:H });
       return pass(r);
     }
     return res.status(405).json({error:'method not allowed'});
