@@ -842,12 +842,31 @@ function toggleVoice(){
   recog.start();
 }
 function setVoiceOut(on){ voiceOut=on; try{localStorage.setItem('onda-voice',on?'1':'0');}catch(e){} const b=document.getElementById('voiceBtn'); if(b){ b.classList.toggle('on',on); b.textContent=on?'🔊':'🔇'; } if(!on&&window.speechSynthesis) speechSynthesis.cancel(); if(!applying) syncSoon(); }
+let _voice=null;
+function pickVoice(){
+  if(!window.speechSynthesis) return null;
+  const vs=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().replace('_','-').startsWith('ko'));
+  if(!vs.length) return null;
+  // 자연스러운 순서: Google 네트워크 > iOS Yuna(enhanced) > 삼성/MS > 그 외. localService=false(네트워크)가 보통 더 자연스러움
+  const pref=['Google 한국의','Google Korean','Yuna','유나','Sora','나라','Heami','Microsoft'];
+  for(const p of pref){ const f=vs.find(v=>v.name.includes(p)); if(f) return f; }
+  return vs.find(v=>v.localService===false) || vs.find(v=>/enhanced|premium|natural/i.test(v.name)) || vs[0];
+}
+function ensureVoice(){ _voice=pickVoice(); }
+if(window.speechSynthesis){ speechSynthesis.onvoiceschanged=ensureVoice; ensureVoice(); }
 function speak(html){
   if(!voiceOut||!window.speechSynthesis) return;
-  const plain=String(html).replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,' ').replace(/\s+/g,' ').trim();
+  let plain=String(html)
+    .replace(/<[^>]+>/g,'')                       // 태그 제거
+    .replace(/&[a-z]+;/g,' ')                      // HTML 엔티티
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\u{FE00}-\u{FE0F}\u{1F1E6}-\u{1F1FF}]/gu,'') // 이모지/기호
+    .replace(/[·•▶►◆■]/g,' ').replace(/\s+/g,' ').trim();
   if(!plain) return;
   speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(plain); u.lang='ko-KR'; u.rate=1.05; u.pitch=1.02;
+  const u=new SpeechSynthesisUtterance(plain);
+  if(!_voice) ensureVoice();
+  if(_voice){ u.voice=_voice; u.lang=_voice.lang; } else u.lang='ko-KR';
+  u.rate=1.0; u.pitch=1.0;   // 자연스러운 기본값
   speechSynthesis.speak(u);
 }
 
