@@ -45,7 +45,7 @@
 html{scroll-behavior:smooth}
 body{
   font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--txt);
-  min-height:100vh;overflow-x:hidden;transition:background var(--transition),color var(--transition);
+  min-height:100vh;min-height:100dvh;overflow-x:hidden;transition:background var(--transition),color var(--transition);
   position:relative;
 }
 /* 배경 그리드 + 오로라 (천천히 흐름) */
@@ -1683,7 +1683,10 @@ async function callAIRaw(prompt){
     pts=Array.from({length:n},()=>({x:Math.random()*w,y:Math.random()*h,
       vx:(Math.random()-.5)*.45,vy:(Math.random()-.5)*.45,r:Math.random()*1.8+.8,
       c:COLORS[Math.floor(Math.random()*COLORS.length)]})); }
-  resize(); addEventListener('resize',resize);
+  resize();
+  // 모바일 스크롤 시 주소창 숨김/표시로 높이만 바뀌는 건 무시(너비 변할 때만 재생성) → 떨림 방지
+  let lastW=innerWidth, rt=null;
+  addEventListener('resize',()=>{ if(innerWidth===lastW) return; lastW=innerWidth; clearTimeout(rt); rt=setTimeout(resize,200); });
   let mx=-999,my=-999; addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
   (function loop(){
     ctx.clearRect(0,0,w,h);
