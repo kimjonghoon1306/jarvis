@@ -135,6 +135,9 @@ body::after{
 .led{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:blink 2s infinite}
 @keyframes blink{50%{opacity:.4}}
 .hud-clock{font-family:'Share Tech Mono';font-size:15px;color:var(--accent);letter-spacing:1px}
+.icon-btn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line2);background:var(--surf2);
+  color:var(--txt);font-size:17px;cursor:pointer;transition:.25s;flex-shrink:0;display:grid;place-items:center}
+.icon-btn:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 16px -8px var(--glow)}
 .theme-btn{width:54px;height:30px;border-radius:99px;border:1px solid var(--line2);background:var(--surf2);
   position:relative;cursor:pointer;transition:.3s;flex-shrink:0}
 .theme-btn i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;
@@ -217,6 +220,41 @@ body::after{
   background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121a;font-size:18px;font-weight:900;
   transition:transform .15s;display:grid;place-items:center}
 .jarvis-input button:active{transform:scale(.9)}
+/* 설정 모달 */
+.modal-scrim{position:fixed;inset:0;z-index:50;background:rgba(6,12,24,.66);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:18px}
+.modal-scrim.on{display:flex;animation:fadeIn .25s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{width:min(560px,96vw);max-height:88vh;overflow-y:auto;background:var(--surf);border:1px solid var(--line2);
+  border-radius:22px;box-shadow:0 40px 90px -30px #000;animation:modalIn .35s cubic-bezier(.2,.9,.2,1)}
+@keyframes modalIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
+.modal-h{display:flex;align-items:center;gap:12px;padding:20px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surf);z-index:1}
+.modal-h .mh-ico{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-size:19px;background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.modal-h b{font-family:'Orbitron';font-size:15px;letter-spacing:.05em}
+.modal-h i{display:block;font-style:normal;font-size:11.5px;color:var(--sub);margin-top:2px}
+.modal-h .mh-x{margin-left:auto;width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:none;color:var(--sub);font-size:16px;cursor:pointer}
+.modal-h .mh-x:hover{color:var(--txt);border-color:var(--line2)}
+.modal-body{padding:20px 22px;display:flex;flex-direction:column;gap:18px}
+.eng-pick{display:flex;gap:8px}
+.eng-pick button{flex:1;padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--surf2);color:var(--sub);
+  font-weight:700;font-size:13px;cursor:pointer;transition:.2s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.eng-pick button .e{font-size:18px}
+.eng-pick button.sel{border-color:var(--accent);color:var(--txt);background:color-mix(in srgb,var(--accent) 12%,transparent);box-shadow:0 0 0 1px var(--accent) inset}
+.key-row{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--surf2)}
+.key-row-h{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.key-logo{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:15px;font-weight:900}
+.key-label{font-weight:800;font-size:14px}
+.key-tag{font-size:10.5px;padding:2px 8px;border-radius:99px;background:var(--surf);border:1px solid var(--line);color:var(--sub)}
+.key-issue{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--accent);text-decoration:none;padding:5px 11px;border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:99px;transition:.2s}
+.key-issue:hover{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.key-inp-row{display:flex;gap:7px}
+.key-inp-row input{flex:1;min-width:0;background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--txt);font-size:13px;font-family:'Share Tech Mono';outline:none}
+.key-inp-row input:focus{border-color:var(--accent)}
+.key-inp-row button{padding:0 13px;border-radius:10px;border:1px solid var(--line);background:var(--surf);color:var(--sub);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.key-inp-row button:hover{color:var(--txt);border-color:var(--line2)}
+.key-inp-row button.save{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121a;border:none}
+.key-msg{font-size:11.5px;margin-top:7px;font-weight:600;min-height:14px}
+.modal-note{font-size:11.5px;color:var(--dim);line-height:1.6;background:var(--surf2);border:1px dashed var(--line);border-radius:12px;padding:12px 14px}
 .typing span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin:0 1px;animation:typing 1.2s infinite}
 .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
 @keyframes typing{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
@@ -252,6 +290,7 @@ body::after{
     <div class="hud-spacer"></div>
     <div class="hud-status"><span class="led"></span> ALL SYSTEMS ONLINE</div>
     <div class="hud-clock mono" id="clock">--:--:--</div>
+    <button class="icon-btn" onclick="openSettings()" aria-label="설정" title="AI 설정">⚙️</button>
     <button class="theme-btn" onclick="toggleTheme()" aria-label="테마"><i id="themeIco">🌙</i></button>
   </div>
 
@@ -289,6 +328,77 @@ body::after{
       <span class="pulse-dot"></span>
       <input id="chatInput" type="text" placeholder="무엇을 도와드릴까요, 사장님?" autocomplete="off">
       <button onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 설정 모달 (AI 연결) ══ -->
+<div class="modal-scrim" id="settings" onclick="if(event.target===this)closeSettings()">
+  <div class="modal">
+    <div class="modal-h">
+      <span class="mh-ico">🧠</span>
+      <div><b>AI 엔진 연결</b><i>키를 넣으면 자비스가 진짜로 대화합니다</i></div>
+      <button class="mh-x" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <div style="font-size:12px;color:var(--sub);font-weight:700;margin-bottom:8px">사용할 엔진</div>
+        <div class="eng-pick" id="engPick">
+          <button data-eng="gemini" onclick="setEngine('gemini')"><span class="e">✨</span>Gemini</button>
+          <button data-eng="claude" onclick="setEngine('claude')"><span class="e">🟣</span>Claude</button>
+          <button data-eng="groq" onclick="setEngine('groq')"><span class="e">⚡</span>Groq</button>
+        </div>
+      </div>
+
+      <!-- Gemini -->
+      <div class="key-row">
+        <div class="key-row-h">
+          <span class="key-logo" style="background:rgba(110,168,255,.18);color:#6ea8ff">G</span>
+          <span class="key-label">Gemini</span><span class="key-tag">무료 · 추천</span>
+          <a class="key-issue" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">🔑 발급받기</a>
+        </div>
+        <div class="key-inp-row">
+          <input id="key-gemini" type="password" placeholder="AIza...">
+          <button onclick="toggleKey('gemini')">표시</button>
+          <button onclick="testKey('gemini')">테스트</button>
+          <button class="save" onclick="saveKey('gemini')">저장</button>
+        </div>
+        <div class="key-msg" id="msg-gemini"></div>
+      </div>
+
+      <!-- Claude -->
+      <div class="key-row">
+        <div class="key-row-h">
+          <span class="key-logo" style="background:rgba(169,139,255,.18);color:#a98bff">C</span>
+          <span class="key-label">Claude</span><span class="key-tag">고급 · 유료(선불)</span>
+          <a class="key-issue" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">🔑 발급받기</a>
+        </div>
+        <div class="key-inp-row">
+          <input id="key-claude" type="password" placeholder="sk-ant-...">
+          <button onclick="toggleKey('claude')">표시</button>
+          <button onclick="testKey('claude')">테스트</button>
+          <button class="save" onclick="saveKey('claude')">저장</button>
+        </div>
+        <div class="key-msg" id="msg-claude"></div>
+      </div>
+
+      <!-- Groq -->
+      <div class="key-row">
+        <div class="key-row-h">
+          <span class="key-logo" style="background:rgba(255,180,84,.18);color:#ffb454">Q</span>
+          <span class="key-label">Groq</span><span class="key-tag">무료 · 초고속</span>
+          <a class="key-issue" href="https://console.groq.com/keys" target="_blank" rel="noopener">🔑 발급받기</a>
+        </div>
+        <div class="key-inp-row">
+          <input id="key-groq" type="password" placeholder="gsk_...">
+          <button onclick="toggleKey('groq')">표시</button>
+          <button onclick="testKey('groq')">테스트</button>
+          <button class="save" onclick="saveKey('groq')">저장</button>
+        </div>
+        <div class="key-msg" id="msg-groq"></div>
+      </div>
+
+      <div class="modal-note">🔒 키는 이 브라우저(localStorage)에만 저장되고 서버로 보내지 않습니다. 키가 없으면 자비스는 데모 모드로 답해요. 무료로 시작하려면 <b>Gemini</b> 또는 <b>Groq</b>를 추천합니다.</div>
     </div>
   </div>
 </div>
@@ -427,14 +537,89 @@ function jarvisReply(q){
   if(/고마|감사|수고/.test(t)) return '천만에요 사장님. 언제든 불러주세요. 🦾';
   return '"'+q+'" 명령을 접수했습니다. 지금은 데모 모드라 정해진 답변만 드려요 — AI 키(Gemini/Claude)를 연결하면 무엇이든 답하는 진짜 자비스가 됩니다.';
 }
-function sendMsg(){
+async function sendMsg(){
   const inp = document.getElementById('chatInput');
   const q = inp.value.trim(); if(!q) return;
   addU(q); inp.value='';
   addTyping();
-  setTimeout(()=>{ document.getElementById('typing')?.remove(); addJ(jarvisReply(q)); }, 900+Math.random()*600);
+  try{
+    const ai = await callAI(q);              // 키 있으면 실제 AI
+    document.getElementById('typing')?.remove();
+    addJ(ai ? ai.replace(/\n/g,'<br>') : jarvisReply(q));   // 없으면 데모
+  }catch(e){
+    document.getElementById('typing')?.remove();
+    addJ('연결 중 문제가 생겼어요: '+e.message+' <br>⚙️ 설정에서 키를 확인해 주세요.');
+  }
 }
 document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendMsg(); });
+
+/* ════════ AI 설정 (퍼블리 방식: localStorage 키 + 테스트 + 발급) ════════ */
+const KEY_STORE = { gemini:'jarvis-key-gemini', claude:'jarvis-key-claude', groq:'jarvis-key-groq' };
+const SYS_PROMPT = '당신은 "자비스(J.A.R.V.I.S)" — 온종일 김종훈 사장님의 AI 비서입니다. 항상 한국어로, 정중하면서 간결하고 똑똑하게 답하세요. 사장님이 운영하는 사업: 무한분양(쇼핑몰 빌더), 온종일팜(농수산물 쇼핑몰), 퍼블리(블로그 자동발행), 스토어 자동생성(AI 상세페이지), 방판 프로, 온종일 본사(제작 포트폴리오). 모르면 솔직히 말하고, 답은 3~5문장 이내로.';
+
+function openSettings(){
+  ['gemini','claude','groq'].forEach(id=>{ const v=localStorage.getItem(KEY_STORE[id])||''; const el=document.getElementById('key-'+id); if(el)el.value=v; });
+  reflectEngine();
+  document.getElementById('settings').classList.add('on');
+}
+function closeSettings(){ document.getElementById('settings').classList.remove('on'); }
+function getEngine(){ return localStorage.getItem('jarvis-engine')||'gemini'; }
+function setEngine(e){ localStorage.setItem('jarvis-engine',e); reflectEngine(); }
+function reflectEngine(){ const e=getEngine(); document.querySelectorAll('#engPick button').forEach(b=>b.classList.toggle('sel', b.dataset.eng===e)); }
+function toggleKey(id){ const el=document.getElementById('key-'+id); el.type = el.type==='password'?'text':'password'; }
+function saveKey(id){
+  const v=document.getElementById('key-'+id).value.trim(); const m=document.getElementById('msg-'+id);
+  if(!v){ m.style.color='var(--warn)'; m.textContent='키를 입력하세요'; return; }
+  localStorage.setItem(KEY_STORE[id], v); setEngine(id);
+  m.style.color='var(--ok)'; m.textContent='✅ 저장됨 · 이제 이 엔진으로 대화합니다';
+  setTimeout(()=>m.textContent='',3000);
+}
+async function testKey(id){
+  const v=document.getElementById('key-'+id).value.trim(); const m=document.getElementById('msg-'+id);
+  if(!v){ m.style.color='var(--warn)'; m.textContent='키를 입력하세요'; return; }
+  m.style.color='var(--sub)'; m.textContent='테스트 중...';
+  try{
+    let ok=false;
+    if(id==='gemini'){
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${v}`,
+        {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'hi'}]}],generationConfig:{maxOutputTokens:5}})});
+      ok=r.ok;
+    }else if(id==='groq'){
+      const r=await fetch('https://api.groq.com/openai/v1/models',{headers:{Authorization:`Bearer ${v}`}}); ok=r.ok;
+    }else if(id==='claude'){
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+        headers:{'content-type':'application/json','x-api-key':v,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:5,messages:[{role:'user',content:'hi'}]})}); ok=r.ok;
+    }
+    m.style.color = ok?'var(--ok)':'var(--warn)';
+    m.textContent = ok?'✅ 연결 성공!':'❌ 키 오류 또는 연결 실패';
+  }catch(e){ m.style.color='var(--warn)'; m.textContent='❌ '+e.message; }
+}
+
+/* ── 실제 AI 호출 ── */
+async function callAI(q){
+  const eng=getEngine(); const key=localStorage.getItem(KEY_STORE[eng]);
+  if(!key) return null; // 키 없으면 데모로 폴백
+  if(eng==='gemini'){
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+      {method:'POST',headers:{'Content-Type':'application/json'},
+       body:JSON.stringify({systemInstruction:{parts:[{text:SYS_PROMPT}]},contents:[{parts:[{text:q}]}],generationConfig:{maxOutputTokens:600}})});
+    const d=await r.json(); return d?.candidates?.[0]?.content?.parts?.[0]?.text || '응답을 가져오지 못했어요.';
+  }
+  if(eng==='groq'){
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',
+      headers:{'Content-Type':'application/json',Authorization:`Bearer ${key}`},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:600,messages:[{role:'system',content:SYS_PROMPT},{role:'user',content:q}]})});
+    const d=await r.json(); return d?.choices?.[0]?.message?.content || '응답을 가져오지 못했어요.';
+  }
+  if(eng==='claude'){
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:600,system:SYS_PROMPT,messages:[{role:'user',content:q}]})});
+    const d=await r.json(); return d?.content?.[0]?.text || '응답을 가져오지 못했어요.';
+  }
+  return null;
+}
 
 /* ── 파티클 네트워크 배경 (다채로운 색이 떠다니며 연결) ── */
 (function(){
