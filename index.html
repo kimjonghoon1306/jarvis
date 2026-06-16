@@ -255,6 +255,37 @@ body::after{
 .key-inp-row button.save{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121a;border:none}
 .key-msg{font-size:11.5px;margin-top:7px;font-weight:600;min-height:14px}
 .modal-note{font-size:11.5px;color:var(--dim);line-height:1.6;background:var(--surf2);border:1px dashed var(--line);border-radius:12px;padding:12px 14px}
+/* 사업 상세 대시보드 패널 (우측 드로어) */
+.detail-scrim{position:fixed;inset:0;z-index:55;background:rgba(6,12,24,.6);backdrop-filter:blur(5px);
+  display:none;justify-content:flex-end}
+.detail-scrim.on{display:flex;animation:fadeIn .25s}
+.detail-panel{width:min(480px,94vw);height:100%;overflow-y:auto;background:var(--bg2);
+  border-left:1px solid var(--line2);box-shadow:-30px 0 80px -30px #000;transform:translateX(40px);opacity:0;
+  animation:drawerIn .4s cubic-bezier(.2,.9,.2,1) forwards}
+@keyframes drawerIn{to{transform:none;opacity:1}}
+.dp-head{position:sticky;top:0;z-index:1;background:var(--bg2);padding:22px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:14px}
+.dp-head .dp-ico{width:54px;height:54px;border-radius:15px;display:grid;place-items:center;font-size:26px}
+.dp-head .dp-tt b{font-family:'Orbitron';font-size:17px}
+.dp-head .dp-tt span{display:block;font-size:12px;color:var(--sub);margin-top:3px}
+.dp-head .dp-x{margin-left:auto;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:none;color:var(--sub);font-size:17px;cursor:pointer}
+.dp-body{padding:22px;display:flex;flex-direction:column;gap:18px}
+.dp-live{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-family:'Share Tech Mono';color:var(--ok);
+  padding:5px 11px;border-radius:99px;background:color-mix(in srgb,var(--ok) 12%,transparent);width:fit-content}
+.dp-metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dp-metric{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:18px;position:relative;overflow:hidden}
+.dp-metric::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;background:var(--mc,var(--accent))}
+.dp-metric b{font-family:'Share Tech Mono';font-size:30px;color:var(--mc,var(--accent));display:block}
+.dp-metric span{font-size:12px;color:var(--sub)}
+.dp-sec-t{font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.05em;margin-top:4px}
+.dp-desc{font-size:13.5px;color:var(--txt);line-height:1.7;background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:15px}
+.dp-actions{display:flex;flex-direction:column;gap:9px}
+.dp-btn{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:13px;border:1px solid var(--line2);
+  background:var(--surf);color:var(--txt);font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:.2s}
+.dp-btn:hover{border-color:var(--accent);transform:translateY(-2px)}
+.dp-btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#04121a;border:none}
+.dp-btn.ctrl{border-style:dashed;color:var(--sub)}
+.dp-note{font-size:12px;color:var(--dim);background:var(--surf2);border:1px dashed var(--line);border-radius:12px;padding:12px 14px;line-height:1.6}
 .typing span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin:0 1px;animation:typing 1.2s infinite}
 .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
 @keyframes typing{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
@@ -330,6 +361,11 @@ body::after{
       <button onclick="sendMsg()">➤</button>
     </div>
   </div>
+</div>
+
+<!-- ══ 사업 상세 대시보드 패널 ══ -->
+<div class="detail-scrim" id="detail" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-panel" id="detailPanel"></div>
 </div>
 
 <!-- ══ 설정 모달 (AI 연결) ══ -->
@@ -408,19 +444,31 @@ body::after{
 const BIZ = [
   { e:'🏬', n:'무한분양', d:'쇼핑몰 빌더 · 24스킨', m:24, u:'스킨', c:'#38d6ff', url:'https://on.xn--zk5biyyw.com',
     brief:'클릭 한 번으로 쇼핑몰을 찍어내는 빌더입니다. 24개 스킨, 발행 쇼핑몰 운영 중이에요.',
-    live:{ url:'https://nvswnasjtnbrmpdetcbv.supabase.co', key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52c3duYXNqdG5icm1wZGV0Y2J2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTYzNjUsImV4cCI6MjA5Njk5MjM2NX0.1EJZgsAs-lYdy5-d8nHaI1iNZ2qSR3nNKMQLtFKBwRw', table:'stores', u:'몰' } },
+    live:{ url:'https://nvswnasjtnbrmpdetcbv.supabase.co', key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52c3duYXNqdG5icm1wZGV0Y2J2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTYzNjUsImV4cCI6MjA5Njk5MjM2NX0.1EJZgsAs-lYdy5-d8nHaI1iNZ2qSR3nNKMQLtFKBwRw', table:'stores', u:'몰' },
+    admin:'https://on.xn--zk5biyyw.com/dashboard',
+    metrics:[{l:'발행 쇼핑몰',t:'stores'},{l:'전체 상품',t:'products'}],
+    ctrl:[{label:'➕ 새 쇼핑몰 만들기',to:'https://on.xn--zk5biyyw.com/?studio=1'}] },
   { e:'🥬', n:'온종일팜', d:'농수산물 쇼핑몰 (유안 F&B)', m:128, u:'주문/월', c:'#34e1a0', url:'https://app.yuanfnb.com',
     brief:'유안 F&B의 농수산물 도매·소매 쇼핑몰입니다. 농수산물을 산지직송으로 판매해요.',
-    live:{ url:'https://vkdczkxeiidffdgnebjs.supabase.co', key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZGN6a3hlaWlkZmZkZ25lYmpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMzcyMzAsImV4cCI6MjA5MTcxMzIzMH0.lUaaZmV5kKE9FkT6ldMGrO-bcm5QcHJF97xnCIynSpM', rpc:'jarvis_stats', field:'orders', u:'주문' } },
+    live:{ url:'https://vkdczkxeiidffdgnebjs.supabase.co', key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZGN6a3hlaWlkZmZkZ25lYmpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMzcyMzAsImV4cCI6MjA5MTcxMzIzMH0.lUaaZmV5kKE9FkT6ldMGrO-bcm5QcHJF97xnCIynSpM', rpc:'jarvis_stats', field:'orders', u:'주문' },
+    admin:'https://app.yuanfnb.com',
+    metrics:[{l:'누적 주문',rf:'orders'},{l:'등록 상품',rf:'products'}],
+    ctrl:[{label:'🛒 쇼핑몰 관리자 열기',to:'https://app.yuanfnb.com'}] },
   { e:'✍️', n:'블로그오토프로', d:'블로그 글 AI 자동생성·발행', m:'AUTO', u:'발행', c:'#ffb454', url:'https://blogautopro.com',
-    brief:'네이버 키워드·데이터랩 분석부터 제목·콘텐츠·이미지 AI 생성, 자동 발행까지 한 번에. blogautopro.com 에서 운영 중입니다.' },
+    brief:'네이버 키워드·데이터랩 분석부터 제목·콘텐츠·이미지 AI 생성, 자동 발행까지 한 번에. blogautopro.com 에서 운영 중입니다.',
+    admin:'https://blogautopro.com', note:'발행 통계·발행 명령 연동은 준비 중입니다 (Upstash KV 기반).' },
   { e:'🤖', n:'스토어 자동생성', d:'AI 상세페이지 생성', m:'AI', u:'엔진', c:'#a98bff', url:'https://store.xn--zk5biyyw.com',
     brief:'상품 사진만 올리면 AI가 키워드·카피·상세페이지를 자동 생성합니다. store.온종일.com 에서 써보세요.',
-    live:{ url:'https://hlddecqxpuzxxokjcldm.supabase.co', key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsZGRlY3F4cHV6eHhva2pjbGRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDQ3MjgsImV4cCI6MjA5MjY4MDcyOH0.L0fu3wKS3Yez0wIfaQ9twtADxjWrFWnxaSeMHgYUL7o', table:'generated_results', u:'생성' } },
+    live:{ url:'https://hlddecqxpuzxxokjcldm.supabase.co', key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsZGRlY3F4cHV6eHhva2pjbGRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDQ3MjgsImV4cCI6MjA5MjY4MDcyOH0.L0fu3wKS3Yez0wIfaQ9twtADxjWrFWnxaSeMHgYUL7o', table:'generated_results', u:'생성' },
+    admin:'https://store.xn--zk5biyyw.com',
+    metrics:[{l:'생성 상세페이지',t:'generated_results'},{l:'공유 페이지',t:'shared_pages'}],
+    ctrl:[{label:'✨ 새 상세페이지 만들기',to:'https://store.xn--zk5biyyw.com'}] },
   { e:'📊', n:'방판 프로', d:'방문판매 MLM 관리', m:'∞', u:'회원', c:'#ff6fae', url:'#',
-    brief:'방문판매 조직·실적·수당을 관리하는 MLM 플랫폼입니다. 현재 개발 진행 중이에요.' },
+    brief:'방문판매 조직·실적·수당을 관리하는 MLM 플랫폼입니다. 현재 개발 진행 중이에요.',
+    note:'개발 진행 중인 프로젝트입니다. 완성되면 조직·실적·수당이 여기 표시됩니다.' },
   { e:'🌙', n:'온종일 본사', d:'제작 포트폴리오', m:120, u:'프로젝트', c:'#6ea8ff', url:'https://www.xn--zk5biyyw.com',
-    brief:'온종일이 직접 만든 제작 포트폴리오 사이트입니다. 120개+ 프로젝트를 소개해요.' },
+    brief:'온종일이 직접 만든 제작 포트폴리오 사이트입니다. 120개+ 프로젝트를 소개해요.',
+    admin:'https://www.xn--zk5biyyw.com', note:'제작 포트폴리오 사이트입니다.' },
 ];
 
 /* ── 부팅 시퀀스 ── */
@@ -450,27 +498,16 @@ setTimeout(() => {
 function initApp(){
   // 사업 카드 (카드별 색 + 카운트업 + 3D 틸트 + stagger 등장)
   document.getElementById('bizGrid').innerHTML = BIZ.map((b,i) => `
-    <a class="biz-card" style="--c:${b.c}" data-i="${i}" href="${b.url}" ${b.url!=='#'?'target="_blank" rel="noopener"':''}>
+    <div class="biz-card" style="--c:${b.c}" data-i="${i}" onclick="openDetail(${i})">
       <span class="bc-float"></span>
       <div class="bc-top"><span class="bc-emoji">${b.e}</span><span class="bc-led"><span class="led"></span>ONLINE</span></div>
       <div class="bc-name">${b.n}</div>
       <div class="bc-desc">${b.d}</div>
       <div class="bc-metric"><b data-num="${typeof b.m==='number'?b.m:''}">${typeof b.m==='number'?'0':b.m}</b><span>${b.u}</span></div>
-    </a>`).join('');
+    </div>`).join('');
   const cards = [...document.querySelectorAll('.biz-card')];
   cards.forEach((card,i)=>{
     setTimeout(()=>{ card.classList.add('in'); countUp(card.querySelector('.bc-metric b')); }, 120 + i*110);
-    // 웹주소 없는 유닛은 클릭 시 자비스가 브리핑
-    const biz = BIZ[+card.dataset.i];
-    if(biz.url==='#'){
-      card.addEventListener('click', e=>{
-        e.preventDefault();
-        document.getElementById('chatInput')?.focus({preventScroll:true});
-        addU(biz.n);
-        addTyping();
-        setTimeout(()=>{ document.getElementById('typing')?.remove(); addJ('<b style="color:'+biz.c+'">'+biz.n+'</b> — '+biz.brief); }, 700);
-      });
-    }
     // 3D 마우스 틸트 (툭 튀어나오는 입체감)
     card.addEventListener('mousemove', e=>{
       const r=card.getBoundingClientRect();
@@ -515,6 +552,54 @@ async function fetchLiveData(){
       }
     }catch(e){ /* 실패 시 데모값 유지 */ }
   }
+}
+
+/* ── 사업 상세 대시보드 패널 ── */
+function closeDetail(){ document.getElementById('detail').classList.remove('on'); }
+async function openDetail(i){
+  const b=BIZ[i];
+  const ctrlBtns=(b.ctrl||[]).map(a=>`<a class="dp-btn ctrl" href="${a.to}" target="_blank" rel="noopener">${a.label}</a>`).join('');
+  const metricBoxes=(b.metrics||[]).map((m,k)=>`<div class="dp-metric" style="--mc:${b.c}"><b id="dpm-${k}">··</b><span>${m.l}</span></div>`).join('');
+  document.getElementById('detailPanel').innerHTML=`
+    <div class="dp-head">
+      <span class="dp-ico" style="background:color-mix(in srgb,${b.c} 18%,transparent)">${b.e}</span>
+      <div class="dp-tt"><b>${b.n}</b><span>${b.d}</span></div>
+      <button class="dp-x" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="dp-body">
+      ${b.live?'<span class="dp-live"><span class="led"></span>LIVE · 실시간 연결됨</span>':''}
+      ${metricBoxes?`<div class="dp-sec-t">📊 실시간 현황</div><div class="dp-metrics">${metricBoxes}</div>`:''}
+      <div class="dp-desc">${b.brief}</div>
+      ${b.note?`<div class="dp-note">ℹ️ ${b.note}</div>`:''}
+      <div class="dp-sec-t">⚡ 빠른 작업</div>
+      <div class="dp-actions">
+        ${b.url&&b.url!=='#'?`<a class="dp-btn primary" href="${b.url}" target="_blank" rel="noopener">🌐 사이트 바로가기</a>`:''}
+        ${b.admin&&b.admin!==b.url?`<a class="dp-btn" href="${b.admin}" target="_blank" rel="noopener">⚙️ 관리자 페이지</a>`:''}
+        ${ctrlBtns}
+        <button class="dp-btn" onclick="briefBiz(${i})">🤖 자비스에게 브리핑 받기</button>
+      </div>
+    </div>`;
+  document.getElementById('detail').classList.add('on');
+  // 실데이터 채우기
+  (b.metrics||[]).forEach(async (m,k)=>{
+    try{
+      let n='-';
+      if(m.rf && b.live?.rpc){
+        const r=await fetch(`${b.live.url}/rest/v1/rpc/${b.live.rpc}`,{method:'POST',headers:{apikey:b.live.key,Authorization:'Bearer '+b.live.key,'Content-Type':'application/json'},body:'{}'});
+        const d=await r.json(); n=d?.[m.rf] ?? '-';
+      }else if(m.t && b.live){
+        const r=await fetch(`${b.live.url}/rest/v1/${m.t}?select=id`,{headers:{apikey:b.live.key,Authorization:'Bearer '+b.live.key,Prefer:'count=exact',Range:'0-0'}});
+        const cr=r.headers.get('content-range')||''; n=parseInt((cr.split('/')[1]||'').trim()); if(isNaN(n))n='-';
+      }
+      const el=document.getElementById('dpm-'+k); if(el)el.textContent=n;
+    }catch(e){ const el=document.getElementById('dpm-'+k); if(el)el.textContent='-'; }
+  });
+}
+function briefBiz(i){
+  const b=BIZ[i]; closeDetail();
+  addU(b.n+' 브리핑');
+  addTyping();
+  setTimeout(()=>{ document.getElementById('typing')?.remove(); addJ('<b style="color:'+b.c+'">'+b.n+'</b> — '+b.brief); }, 700);
 }
 
 /* ── 숫자 카운트업 ── */
