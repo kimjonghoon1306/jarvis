@@ -144,6 +144,20 @@ body::after{
 .gc-btn.deploy{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 20%,transparent),color-mix(in srgb,var(--accent3) 20%,transparent));border-color:color-mix(in srgb,var(--accent) 42%,transparent)}
 .gc-btn:active{transform:scale(.95)}
 @media(max-width:760px){.gc-btn span{display:none}.gc-btn{padding:0 11px}}
+@media(max-width:600px){
+  .hud-clock{display:none}
+  .hud-status{display:none}
+  .gc-btn{display:none}                /* 모바일: 점검/배포는 음성·채팅으로("전체 점검") */
+  .hud-logo i{display:none}            /* 부제 숨김 */
+  .hud-top{gap:8px;padding:11px 12px;flex-wrap:wrap;justify-content:flex-end;overflow:visible}
+  .hud-spacer{display:none}
+  .hud-logo{flex:1 1 auto;min-width:0;margin-right:auto}
+  .hud-logo>div{min-width:0;overflow:hidden}
+  .hud-logo b{font-size:15px;letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud-logo .mark{width:32px;height:32px}
+  .icon-btn{width:36px;height:36px;flex-shrink:0}
+  .theme-btn{width:48px;height:28px;flex-shrink:0}
+}
 .theme-btn{width:54px;height:30px;border-radius:99px;border:1px solid var(--line2);background:var(--surf2);
   position:relative;cursor:pointer;transition:.3s;flex-shrink:0}
 .theme-btn i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;
@@ -386,7 +400,7 @@ body::after{
     </div>
     <div class="hud-spacer"></div>
     <div class="hud-status" id="hudStatus"><span class="led"></span> ALL SYSTEMS ONLINE</div>
-    <button class="gc-btn" onclick="checkAllHealth()" title="전체 생사 점검">🛰️ <span>전체점검</span></button>
+    <button class="gc-btn" onclick="checkAllHealth()" title="모든 사이트가 살아있는지 점검">🛰️ <span>전체점검</span></button>
     <button class="gc-btn deploy" onclick="sendCmd('전체 배포')" title="훅 등록된 사업 일괄 재배포">🚀 <span>전체배포</span></button>
     <div class="hud-clock mono" id="clock">--:--:--</div>
     <button class="icon-btn" onclick="openSettings()" aria-label="설정" title="AI 설정">⚙️</button>
@@ -399,9 +413,9 @@ body::after{
       <div class="panel">
         <div class="panel-h mono">SYSTEM STATUS</div>
         <div class="gauges">
-          <div class="gauge"><div class="ring" style="--v:98"><b>98%</b></div><div class="gauge-info"><b>가동률</b><span>전 사업 정상</span></div></div>
-          <div class="gauge"><div class="ring" style="--v:76"><b>76</b></div><div class="gauge-info"><b>오늘 방문</b><span>+12% ↑</span></div></div>
-          <div class="gauge"><div class="ring" style="--v:64"><b>64</b></div><div class="gauge-info"><b>처리 작업</b><span>대기 3건</span></div></div>
+          <div class="gauge"><div class="ring" id="gUptime" style="--v:100"><b>--</b></div><div class="gauge-info"><b>가동률</b><span id="gUptimeSub">점검 중...</span></div></div>
+          <div class="gauge"><div class="ring" id="gLive" style="--v:50"><b>0</b></div><div class="gauge-info"><b>실시간 연결</b><span id="gLiveSub">LIVE 사업</span></div></div>
+          <div class="gauge"><div class="ring" id="gUnits" style="--v:100"><b>0</b></div><div class="gauge-info"><b>사업 유닛</b><span>관제 중</span></div></div>
         </div>
       </div>
       <!-- 관제 레이더 -->
@@ -644,7 +658,7 @@ function initApp(){
   unread=0; updateBadge(); // 환영은 안읽음 카운트 제외
   setVoiceOut(voiceOut);   // 🔊 음성출력 버튼 상태 반영
   startClock();
-  liveTicks();
+  const gun=document.getElementById('gUnits'); if(gun){ gun.querySelector('b').textContent=BIZ.length; gun.style.setProperty('--v',100); }
   renderRadar();           // 관제 레이더 블립
   initSignal();            // 라이브 시그널 그래프
   setInterval(tickSignal, 1100);
@@ -679,6 +693,10 @@ async function fetchLiveData(){
       }
     }catch(e){ /* 실패 시 데모값 유지 */ }
   }
+  // 실시간 연결(LIVE) 게이지 실데이터
+  const liveN=BIZ.filter(b=>b._live).length, gl=document.getElementById('gLive');
+  if(gl){ gl.style.setProperty('--v',Math.round(liveN/BIZ.length*100)); gl.querySelector('b').textContent=liveN; }
+  const gls=document.getElementById('gLiveSub'); if(gls) gls.textContent=`${BIZ.length}개 중 LIVE`;
 }
 
 /* ── 사업 상세 대시보드 패널 ── */
@@ -695,7 +713,7 @@ async function openDetail(i){
     </div>
     <div class="dp-body">
       ${b.live?'<span class="dp-live"><span class="led"></span>LIVE · 실시간 연결됨</span>':''}
-      ${b.url&&b.url!=='#'?`<div class="dp-health chk" id="dp-health"><span class="hd"></span><span id="dp-health-t">생사 확인 중...</span><span class="hh-ms" id="dp-health-ms"></span></div>`:''}
+      ${b.url&&b.url!=='#'?`<div class="dp-health chk" id="dp-health"><span class="hd"></span><span id="dp-health-t">사이트 상태 확인 중...</span><span class="hh-ms" id="dp-health-ms"></span></div>`:''}
       ${metricBoxes?`<div class="dp-sec-t">📊 실시간 현황</div><div class="dp-metrics">${metricBoxes}</div>`:''}
       <div class="dp-desc">${b.brief}</div>
       ${b.note?`<div class="dp-note">ℹ️ ${b.note}</div>`:''}
@@ -1052,7 +1070,7 @@ async function tryCommand(q){
   const wantHealth=/점검|상태|헬스|살아|생사|가동|온라인|health|체크/.test(t);
   const wantOpen=/열어|열기|이동|관리자|접속|들어가/.test(t);
   // 전체 명령
-  if(isAll && wantHealth){ checkAllHealth(); return '🛰️ 전체 사업 유닛 <b>헬스 점검</b>을 시작합니다. 상단 시스템 패널에서 실시간으로 확인하세요.'; }
+  if(isAll && wantHealth){ checkAllHealth(); return '🛰️ 모든 사이트가 <b>살아있는지 점검</b>합니다. 카드의 ONLINE/OFFLINE 표시와 좌측 레이더로 확인하세요.'; }
   if(isAll && wantDeploy){ return deployAll(); }
   // 개별 명령
   const i=matchBiz(t); if(i<0) return null;
@@ -1081,10 +1099,14 @@ async function checkAllHealth(){
     if(h.state==='up'){ up++; led.innerHTML=(b._live?'<span class="led"></span>LIVE':'<span class="led"></span>ONLINE'); led.classList.remove('down'); }
     else { down++; led.innerHTML='<span class="led"></span>OFFLINE'; led.classList.add('down'); }
   }
-  toast(`🛰️ 헬스 점검 완료 — 🟢 ${up} 정상${down?` · 🔴 ${down} 점검필요`:''} (총 ${n})`, down?'warn':'ok');
+  toast(`🛰️ 사이트 점검 완료 — 🟢 ${up}개 정상${down?` · 🔴 ${down}개 응답없음`:''} (총 ${n}개)`, down?'warn':'ok');
   // HUD 상단 상태 + 레이더 갱신
   const hs=document.getElementById('hudStatus');
   if(hs) hs.innerHTML = down ? `<span class="led" style="background:#ff6b6b;box-shadow:0 0 10px #ff6b6b"></span> ${down} UNIT${down>1?'S':''} DOWN` : '<span class="led"></span> ALL SYSTEMS ONLINE';
+  // 가동률 게이지 실데이터
+  const pct=n?Math.round(up/n*100):100, gu=document.getElementById('gUptime');
+  if(gu){ gu.style.setProperty('--v',pct); gu.querySelector('b').textContent=pct+'%'; }
+  const gus=document.getElementById('gUptimeSub'); if(gus) gus.textContent=`${up}/${n}개 사업 정상`;
   renderRadar();
 }
 
