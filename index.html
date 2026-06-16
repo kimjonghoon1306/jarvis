@@ -234,6 +234,9 @@ body::after{
 .jarvis-input .chat-toggle .pulse-dot{position:static}
 .jarvis-input .chat-toggle .badge{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:var(--accent);color:#04121a;font-size:9px;font-weight:900;display:none;place-items:center}
 .jarvis-input .chat-toggle.has .badge{display:grid}
+.jarvis-input .chat-toggle.mic{color:var(--accent);font-size:15px}
+#micBtn.listening{border-color:#ff6b6b!important;color:#ff6b6b;animation:pulse 1s infinite}
+#voiceBtn.on{border-color:var(--accent);color:var(--accent)}
 /* 설정 모달 */
 .modal-scrim{position:fixed;inset:0;z-index:50;background:rgba(6,12,24,.66);backdrop-filter:blur(6px);
   display:none;align-items:center;justify-content:center;padding:18px}
@@ -442,7 +445,9 @@ body::after{
     <div class="jarvis-msgs" id="msgs"></div>
     <div class="jarvis-input">
       <button class="chat-toggle" id="chatToggle" onclick="toggleChat()" title="관제 대화 열기/닫기" aria-label="대화 토글"><span class="pulse-dot"></span><span class="badge" id="chatBadge">0</span></button>
-      <input id="chatInput" type="text" placeholder="명령하세요, 테리 — 예: &quot;무한분양 배포&quot;, &quot;전체 점검&quot;" autocomplete="off">
+      <input id="chatInput" type="text" placeholder="명령하세요, 테리 — 말(🎤)로도 가능" autocomplete="off">
+      <button class="chat-toggle" id="voiceBtn" onclick="setVoiceOut(!voiceOut)" title="응답을 음성으로 듣기">🔊</button>
+      <button class="chat-toggle mic" id="micBtn" onclick="toggleVoice()" title="음성으로 명령하기">🎤</button>
       <button class="send" onclick="sendMsg()">➤</button>
     </div>
   </div>
@@ -616,6 +621,7 @@ function initApp(){
   setTimeout(()=>{ toast('🛰️ <b>ONDA</b> 관제 시스템 가동 — 모든 유닛 온라인. 테리, 명령을 기다립니다.','ok'); }, 600);
   addJ('테리, 모든 사업 유닛이 정상 가동 중입니다. 💬 아래 입력창에 명령하세요.<br>예: <b>"무한분양 배포"</b> · <b>"온종일팜 상태"</b> · <b>"전체 점검"</b> · "매출 알려줘"');
   unread=0; updateBadge(); // 환영은 안읽음 카운트 제외
+  setVoiceOut(voiceOut);   // 🔊 음성출력 버튼 상태 반영
   startClock();
   liveTicks();
   renderRadar();           // 관제 레이더 블립
@@ -747,7 +753,7 @@ function toggleTheme(){
 /* ── 채팅 ── */
 const msgs = document.getElementById('msgs');
 function addU(t){ const d=document.createElement('div'); d.className='jmsg u'; d.textContent=t; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; }
-function addJ(html){ const d=document.createElement('div'); d.className='jmsg j'; d.innerHTML='<b>ONDA</b>'+html; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; if(!chatOpen){ unread++; updateBadge(); } }
+function addJ(html){ const d=document.createElement('div'); d.className='jmsg j'; d.innerHTML='<b>ONDA</b>'+html; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; if(!chatOpen){ unread++; updateBadge(); } speak(html); }
 function addTyping(){ const d=document.createElement('div'); d.className='jmsg j typing'; d.id='typing'; d.innerHTML='<b>ONDA</b><span></span><span></span><span></span>'; msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight; }
 
 // 데모 응답 (※ 실제 AI 연결 자리: 여기서 fetch로 Gemini/Claude 호출하면 됨)
@@ -804,6 +810,30 @@ function toast(msg, type){
   setTimeout(()=>{ el.style.transition='opacity .4s,transform .4s'; el.style.opacity='0'; el.style.transform='translateY(-10px)'; setTimeout(()=>el.remove(),400); }, 3600);
 }
 function sendCmd(text){ const inp=document.getElementById('chatInput'); inp.value=text; sendMsg(); }
+
+/* ── 음성 대화 (Web Speech API) ── */
+let recog=null, listening=false, voiceOut=(localStorage.getItem('onda-voice')==='1');
+function toggleVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ toast('이 브라우저는 음성 인식을 지원하지 않아요. Chrome/Safari를 권장합니다.','warn'); return; }
+  if(listening){ recog&&recog.stop(); return; }
+  recog=new SR(); recog.lang='ko-KR'; recog.interimResults=true; recog.continuous=false;
+  const mic=document.getElementById('micBtn'), inp=document.getElementById('chatInput');
+  recog.onstart=()=>{ listening=true; mic.classList.add('listening'); toggleChat(true); toast('🎤 듣고 있어요... 말씀하세요','ok'); };
+  recog.onresult=e=>{ let t=''; for(const r of e.results) t+=r[0].transcript; inp.value=t; };
+  recog.onerror=e=>{ toast('🎤 음성 인식 오류: '+e.error,'err'); };
+  recog.onend=()=>{ listening=false; mic.classList.remove('listening'); const q=inp.value.trim(); if(q){ voiceOut=true; setVoiceOut(true); sendMsg(); } };
+  recog.start();
+}
+function setVoiceOut(on){ voiceOut=on; try{localStorage.setItem('onda-voice',on?'1':'0');}catch(e){} const b=document.getElementById('voiceBtn'); if(b){ b.classList.toggle('on',on); b.textContent=on?'🔊':'🔇'; } if(!on&&window.speechSynthesis) speechSynthesis.cancel(); }
+function speak(html){
+  if(!voiceOut||!window.speechSynthesis) return;
+  const plain=String(html).replace(/<[^>]+>/g,'').replace(/&[a-z]+;/g,' ').replace(/\s+/g,' ').trim();
+  if(!plain) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(plain); u.lang='ko-KR'; u.rate=1.05; u.pitch=1.02;
+  speechSynthesis.speak(u);
+}
 let chatOpen=false, unread=0;
 function toggleChat(force){
   chatOpen = force!==undefined ? force : !chatOpen;
