@@ -796,8 +796,11 @@ const BIZ = [
     metrics:[{l:'총 회원',rf:'members'},{l:'활성 회원',rf:'active_members'},{l:'오늘 가입',rf:'today_joined'},{l:'누적 주문',rf:'orders'}],
     note:'바이너리 조직·실적·수당 플랜 완성. 회원수 LIVE 연결됨(stats RPC).' },
   { e:'🌙', n:'온종일 본사', d:'제작 포트폴리오', m:120, u:'프로젝트', c:'#6ea8ff', url:'https://www.xn--zk5biyyw.com',
-    brief:'온종일이 직접 만든 제작 포트폴리오 사이트입니다. 120개+ 프로젝트를 소개해요.',
-    admin:'https://www.xn--zk5biyyw.com', note:'제작 포트폴리오 사이트입니다.' },
+    brief:'온종일이 직접 만든 제작 포트폴리오 사이트입니다. 제작 사례 프로젝트를 소개해요.',
+    live:{ fs:'onjongil-81e2f', fsKey:'AIzaSyBw1v9s1qJUIwdBISqjPWdvShvCxlTU8GE', collection:'portfolios', u:'프로젝트' },
+    admin:'https://www.xn--zk5biyyw.com',
+    metrics:[{l:'포트폴리오',fs:true}],
+    note:'제작 포트폴리오 사이트. 등록 작품수 LIVE 연결됨(Firestore).' },
 ];
 
 /* ── 부팅 시퀀스 ── */
@@ -875,6 +878,15 @@ function initApp(){
   if(getPass()){ syncPull(true).then(startSyncPoll); } // 기기 동기화 자동 시작
 }
 
+/* ── Firestore 집계 count (공개 읽기 컬렉션) ── */
+async function fsCount(live){
+  try{
+    const r=await fetch(`https://firestore.googleapis.com/v1/projects/${live.fs}/databases/(default)/documents:runAggregationQuery?key=${live.fsKey}`,
+      {method:'POST',headers:{'Content-Type':'application/json'},
+       body:JSON.stringify({structuredAggregationQuery:{structuredQuery:{from:[{collectionId:live.collection}]},aggregations:[{alias:'count',count:{}}]}})});
+    const d=await r.json(); return parseInt(d?.[0]?.result?.aggregateFields?.count?.integerValue);
+  }catch(e){ return NaN; }
+}
 /* ── 실데이터 연결 (Supabase count, anon 공개키) ── */
 async function fetchLiveData(){
   const cards=[...document.querySelectorAll('.biz-card')];
@@ -882,7 +894,10 @@ async function fetchLiveData(){
     const b=BIZ[+card.dataset.i]; if(!b.live) continue;
     try{
       let n=NaN;
-      if(b.live.api){
+      if(b.live.fs){
+        // Firestore 집계 count (본사 포트폴리오 — 공개 읽기)
+        n=await fsCount(b.live);
+      }else if(b.live.api){
         // 자체 통계 API (blogautopro 등 — KV 기반, 집계 JSON 반환)
         const r=await fetch(b.live.api,{cache:'no-store'});
         const d=await r.json(); n=parseInt(d?.[b.live.field]);
@@ -951,7 +966,9 @@ async function openDetail(i){
   (b.metrics||[]).forEach(async (m,k)=>{
     try{
       let n='-';
-      if(m.rf && b.live?.api){
+      if(m.fs && b.live?.fs){
+        const c=await fsCount(b.live); n=isNaN(c)?'-':c;
+      }else if(m.rf && b.live?.api){
         const r=await fetch(b.live.api,{cache:'no-store'}); const d=await r.json(); n=d?.[m.rf] ?? '-';
       }else if(m.rf && b.live?.rpc){
         const r=await fetch(`${b.live.url}/rest/v1/rpc/${b.live.rpc}`,{method:'POST',headers:{apikey:b.live.key,Authorization:'Bearer '+b.live.key,'Content-Type':'application/json'},body:'{}'});
