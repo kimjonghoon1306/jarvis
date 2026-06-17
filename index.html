@@ -297,6 +297,12 @@ body::after{
   .jarvis-input button.send{width:38px;height:38px;font-size:16px;border-radius:11px}
   .jarvis-input .badge{min-width:13px;height:13px;font-size:8px;top:-4px;right:-4px}
 }
+/* 이상 알림 토글 */
+.alert-toggles{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.alrt-tg{padding:7px 11px;border-radius:9px;border:1px solid var(--line2);background:var(--surf2);color:var(--sub);
+  font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:.18s;white-space:nowrap}
+.alrt-tg.on{background:color-mix(in srgb,var(--ok) 20%,transparent);border-color:var(--ok);color:var(--ok)}
+.alrt-tg.off{opacity:.7}
 /* 설정 모달 */
 .modal-scrim{position:fixed;inset:0;z-index:50;background:rgba(6,12,24,.66);backdrop-filter:blur(6px);
   display:none;align-items:center;justify-content:center;padding:18px}
@@ -663,6 +669,21 @@ body::after{
         </div>
         <div class="key-msg" id="syncStatus" style="margin-top:8px;font-size:12px;color:var(--sub)"></div>
       </div>
+
+      <!-- 이상 알림 -->
+      <div class="hook-sec">
+        <div class="hook-sec-h">🔔 이상 알림 (자동 감시)</div>
+        <div class="hook-sec-d">ONDA가 <b>1분마다 모든 사이트를 자동 점검</b>해서, 사업이 응답 없으면 <b>브라우저 알림 + 경보음</b>으로 바로 알려드립니다. 화면을 안 보고 있어도(다른 탭/잠금 전) 떠요.</div>
+        <div class="hook-row">
+          <span class="hk-em">📡</span><span class="hk-nm">자동 감시</span>
+          <div class="alert-toggles">
+            <button class="alrt-tg" id="tgMonitor" onclick="toggleMonitor()">자동점검 ON</button>
+            <button class="alrt-tg" id="tgNotify" onclick="toggleNotify()">알림 켜기</button>
+            <button class="alrt-tg" id="tgSound" onclick="toggleSound()">경보음 ON</button>
+          </div>
+        </div>
+        <div class="key-msg" id="alertStatus" style="margin-top:8px;font-size:12px;color:var(--sub)"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -844,6 +865,7 @@ function initApp(){
   setInterval(tickSignal, 1100);
   fetchLiveData();
   setTimeout(checkAllHealth, 1500); // 초기 생사 점검
+  setTimeout(startMonitor, 8000);   // 🔔 자동 이상 감시 시작(초기 점검 후)
   if(getPass()){ syncPull(true).then(startSyncPoll); } // 기기 동기화 자동 시작
 }
 
@@ -1023,6 +1045,7 @@ function openSettings(){
   reflectEngine();
   renderHooks();
   const sp=document.getElementById('syncPass'); if(sp){ sp.value=getPass(); setSyncStatus(getPass()?'🔗 동기화 연결됨':'미연결 — 비밀번호를 넣고 연결하세요'); }
+  reflectAlertSettings();
   document.getElementById('settings').classList.add('on');
 }
 
@@ -1371,6 +1394,96 @@ function showAlert(names){
 }
 function hideAlert(){ const bar=document.getElementById('alertBar'); if(bar) bar.classList.remove('on'); }
 function dismissAlert(){ hideAlert(); alertDismissed=true; setTimeout(()=>{alertDismissed=false;},30000); }
+
+/* ════════ 🔔 이상 알림 (자동 감시 + 브라우저 알림 + 경보음) ════════ */
+// 설정값 (기본 전부 ON, 알림권한은 사용자가 켜야)
+function monitorOn(){ return localStorage.getItem('onda-monitor')!=='0'; }
+function soundOn(){ return localStorage.getItem('onda-sound')!=='0'; }
+function notifyOn(){ return localStorage.getItem('onda-notify')==='1' && 'Notification' in window && Notification.permission==='granted'; }
+function reflectAlertSettings(){
+  const m=document.getElementById('tgMonitor'), n=document.getElementById('tgNotify'), s=document.getElementById('tgSound'), st=document.getElementById('alertStatus');
+  if(m){ const on=monitorOn(); m.textContent=on?'자동점검 ON':'자동점검 OFF'; m.classList.toggle('on',on); m.classList.toggle('off',!on); }
+  if(s){ const on=soundOn(); s.textContent=on?'경보음 ON':'경보음 OFF'; s.classList.toggle('on',on); s.classList.toggle('off',!on); }
+  if(n){ const ng='Notification' in window?Notification.permission:'unsupported';
+    const on=notifyOn();
+    n.textContent = ng==='unsupported'?'알림 미지원' : on?'알림 ON' : ng==='denied'?'알림 차단됨':'알림 켜기';
+    n.classList.toggle('on',on); n.classList.toggle('off',!on); n.disabled=(ng==='unsupported'||ng==='denied'); }
+  if(st){ st.textContent = monitorOn()?'📡 1분마다 자동 점검 중입니다.':'⏸️ 자동 점검이 꺼져 있어요.'; }
+}
+function toggleMonitor(){ localStorage.setItem('onda-monitor', monitorOn()?'0':'1'); reflectAlertSettings(); syncSoon&&syncSoon(); if(monitorOn()){ startMonitor(); toast('📡 자동 감시를 켰어요. 1분마다 점검합니다.','ok'); } else { stopMonitor(); toast('⏸️ 자동 감시를 껐어요.','warn'); } }
+function toggleSound(){ localStorage.setItem('onda-sound', soundOn()?'0':'1'); reflectAlertSettings(); syncSoon&&syncSoon(); if(soundOn()) alarmBeep(); }
+async function toggleNotify(){
+  if(!('Notification' in window)){ toast('이 브라우저는 알림을 지원하지 않아요.','warn'); return; }
+  if(Notification.permission==='granted'){ // 끄기
+    localStorage.setItem('onda-notify', notifyOn()?'0':'1'); reflectAlertSettings(); syncSoon&&syncSoon();
+    if(notifyOn()) sendNotify('🔔 ONDA 알림 켜짐','이상이 생기면 여기로 바로 알려드릴게요, 테리.'); return;
+  }
+  const p=await Notification.requestPermission();
+  if(p==='granted'){ localStorage.setItem('onda-notify','1'); sendNotify('🔔 ONDA 알림 켜짐','이상이 생기면 여기로 바로 알려드릴게요, 테리.'); toast('🔔 브라우저 알림을 켰어요.','ok'); }
+  else { toast('알림 권한이 거부됐어요. 브라우저 설정에서 허용해 주세요.','warn'); }
+  reflectAlertSettings(); syncSoon&&syncSoon();
+}
+function sendNotify(title, body){
+  if(!notifyOn()) return;
+  try{ const n=new Notification(title,{body, tag:'onda-alert', icon:'og.png', badge:'og.png'});
+    n.onclick=()=>{ window.focus(); n.close(); }; }catch(e){}
+}
+// 경보음: Web Audio 삑-삑 (다운=경고음, 복구=상승음)
+function alarmBeep(kind){
+  if(!soundOn()) return;
+  try{
+    const Ctx=window.AudioContext||window.webkitAudioContext; if(!Ctx) return;
+    const ac=window._alarmAc||(window._alarmAc=new Ctx()); if(ac.state==='suspended') ac.resume();
+    const seq = kind==='recover' ? [[660,0],[990,.12]] : [[880,0],[880,.18],[660,.36]];
+    seq.forEach(([f,t])=>{ const o=ac.createOscillator(),g=ac.createGain();
+      o.type='square'; o.frequency.value=f; o.connect(g); g.connect(ac.destination);
+      const s=ac.currentTime+t; g.gain.setValueAtTime(.0001,s); g.gain.exponentialRampToValueAtTime(.22,s+.02);
+      g.gain.exponentialRampToValueAtTime(.0001,s+.14); o.start(s); o.stop(s+.16); });
+  }catch(e){}
+}
+// 자동 감시 루프: 조용히 핑 → 상태전이(정상→다운/다운→복구)만 알림
+async function autoMonitor(){
+  if(!monitorOn() || window._monBusy) return; window._monBusy=true;
+  try{
+    const newDowns=[], recovered=[];
+    for(let i=0;i<BIZ.length;i++){ const b=BIZ[i]; if(!b.url||b.url==='#') continue;
+      const prev=b._health; const h=await pingBiz(b); b._health=h.state;
+      if(h.state==='down' && prev==='up') newDowns.push(b);
+      if(h.state==='up'  && prev==='down') recovered.push(b);
+    }
+    refreshHealthUI();
+    if(newDowns.length){
+      const names=newDowns.map(b=>b.n);
+      alarmBeep('down'); sendNotify('🔴 ONDA 경보 — 사업 응답 없음', names.join(', ')+' 이(가) 응답하지 않습니다.');
+      showAlert(BIZ.filter(b=>b._health==='down').map(b=>b.n));
+      addJ(`🔴 <b style="color:#ff6b6b">경보</b> — <b>${names.join(', ')}</b> 응답이 끊겼습니다. 점검이 필요해요, 테리.`);
+      if(voiceOut) speak(`경보. ${names.join(', ')} 응답이 없습니다.`);
+    }
+    if(recovered.length){
+      const names=recovered.map(b=>b.n);
+      alarmBeep('recover'); sendNotify('🟢 ONDA — 복구됨', names.join(', ')+' 이(가) 다시 정상입니다.');
+      if(!BIZ.some(b=>b._health==='down')) hideAlert();
+      addJ(`🟢 <b style="color:var(--ok)">복구</b> — <b>${names.join(', ')}</b> 정상으로 돌아왔습니다.`);
+    }
+  } finally { window._monBusy=false; }
+}
+// 카드 LED/HUD/레이더만 가볍게 갱신 (자동점검용, 토스트 없음)
+function refreshHealthUI(){
+  let up=0,n=0;
+  document.querySelectorAll('.biz-card').forEach(c=>{ const b=BIZ[+c.dataset.i]; const led=c.querySelector('.bc-led');
+    if(!led||!b.url||b.url==='#') return; n++;
+    if(b._health==='up'){ up++; led.innerHTML=(b._live?'<span class="led"></span>LIVE':'<span class="led"></span>ONLINE'); led.classList.remove('down','chk'); }
+    else if(b._health==='down'){ led.innerHTML='<span class="led"></span>OFFLINE'; led.classList.add('down'); led.classList.remove('chk'); }
+  });
+  const down=n-up, hs=document.getElementById('hudStatus');
+  if(hs) hs.innerHTML = down ? `<span class="led" style="background:#ff6b6b;box-shadow:0 0 10px #ff6b6b"></span> <span class="hs-tx">${down} UNIT${down>1?"S":""} DOWN</span>` : `<span class="led"></span> <span class="hs-tx">ALL SYSTEMS ONLINE</span>`;
+  const gu=document.getElementById('gUptime'), pct=n?Math.round(up/n*100):100;
+  if(gu){ gu.style.setProperty('--v',pct); gu.querySelector('b').textContent=pct+'%'; }
+  const gus=document.getElementById('gUptimeSub'); if(gus) gus.textContent=`${up}/${n}개 사업 정상`;
+  updateSummary(up,n); renderRadar();
+}
+function startMonitor(){ if(window._monTimer) clearInterval(window._monTimer); if(monitorOn()) window._monTimer=setInterval(autoMonitor,60000); }
+function stopMonitor(){ if(window._monTimer){ clearInterval(window._monTimer); window._monTimer=null; } }
 /* ── 우측 상단 요약 통계 띠 ── */
 function updateSummary(up,n){
   const live=BIZ.filter(b=>b._live).length;
